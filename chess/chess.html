@@ -1,0 +1,248 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>PIXI Chess Game</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				background-color: #000000;
+			}
+		</style>
+		<script src="pixi.dev.js"></script>
+	</head>
+	<body>
+		<script>
+		var stage = new PIXI.Stage(0xaaaaaca);
+		var renderer = PIXI.autoDetectRenderer(800, 700);
+		document.body.appendChild(renderer.view);
+		
+		// load images from an image path
+		var textureButton = PIXI.Texture.fromImage("assets/white_grid.png");
+		var textureButtonDown = PIXI.Texture.fromImage("assets/king-test.png");
+		var eButtonOver = PIXI.Texture.fromImage("assets/pawn-test.png");
+		
+		// global variables
+		var currentPiece;
+		var pieceSelected = false;
+		var pieceType;
+		
+		//setup chessboard
+		var container = new PIXI.Stage();	
+		stage.addChild(container);
+		//generate grid image and position
+		var gridsize = 32;
+		
+		for (var j = 0; j < 12; j++){
+			for (var i = 0; i < 10; i++){
+				if ((i >= 1 && i <= 8) && (j >= 2 && j <= 9)){
+					if ((i%2 == 0 && j%2 != 0) || i%2 != 0 && j%2 ==0){
+						var grid = PIXI.Sprite.fromImage("assets/black_grid.png");
+					}
+					else{
+						var grid = PIXI.Sprite.fromImage("assets/white_grid.png");
+					}
+				}
+				else{
+				var grid = PIXI.Sprite.fromImage("assets/knight-test.png");
+				}
+			grid.x = gridsize * i;
+			grid.y = gridsize * j;
+			container.addChild(grid);
+			}
+		}
+		///*
+		// button layer over the chessboard
+		var buttons = [];
+		var noop = function (){
+			console.log('click');
+		};
+
+		// create a 10 x 12 grid
+		for (var i = 0; i < 10; i++){
+			for (var j = 0; j < 12; j++){
+				var button = new PIXI.Sprite(textureButton);
+				//var button = new PIXI.Stage(textureButton);
+				button.buttonMode = true;
+
+				button.anchor.set(0.5);
+
+				button.position.x = gridsize*i + gridsize/2;
+				button.position.y = gridsize*j + gridsize/2;
+
+				// make the button interactive...
+				button.interactive = true;	
+				
+				button.alpha = 0.2;
+				//mouse pointer over a button
+				button.mouseover = function(){
+					this.tint=0x00ff00;
+				}
+				//mouse pointer leaves a button
+				button.mouseout = function(){
+					this.tint=0xffffff;
+				}
+					
+					
+				button.mousedown = function(){
+					if (pieceSelected == true){
+						this.tint=0xf00000;
+						//Pawn movement rules
+						if (pieceType == pawns){
+							if (currentPiece.position.x == this.position.x){
+								if (currentPiece.position.y > this.position.y &&
+															  currentPiece.position.y < (this.position.y)+(2*gridsize)){
+									currentPiece.position.y = this.position.y;
+								}
+							}
+						}
+						pieceSelected = false;
+					}
+					
+				}
+				
+				button.tap = noop;
+				button.click = noop;
+				// add it to the stage
+				stage.addChild(button);
+
+				// add button to array
+				buttons.push(button);
+			}
+		}
+
+		//pawn
+		// load pawn image
+		var texture = PIXI.Texture.fromImage("assets/pawn-test.png");
+		//set pawns array
+		var pawns = [];
+
+		for (var i = 0; i < 8; i++){
+			//var pawn = {firstmove:false};
+			var pawn = new PIXI.Sprite(texture);
+
+			pawn.anchor.x = 0.5;
+			pawn.anchor.y = 0.5;
+		
+			pawn.position.x = buttons[20+(i*12)].position.x;
+			pawn.position.y = buttons[20+(i*12)].position.y;
+			
+			pawn.interactive = true;
+			pawn.mouseover = function(){
+					this.tint=0x00ff00;
+			}
+			//mouse pointer leaves a button
+			pawn.mouseout = function(){
+					this.tint=0x000000;
+			}
+			pawn.mousedown = function(){
+				if (pieceSelected == false){
+					pieceSelected = true;
+					this.tint=0xf00000;
+					currentPiece = this;
+					pieceType = pawns;
+				}
+			}
+			
+			stage.addChild(pawn);
+			pawns.push(pawn);
+			pawns[i].tint = 0x000000;
+			
+		}
+		
+		var rookTexture = PIXI.Texture.fromImage("assets/rook-test.png");
+		var rooks = [];
+		for (var i = 0; i < 2; i++){
+			var rook = new PIXI.Sprite(rookTexture);
+			
+			rook.anchor.x = 0.5;
+			rook.anchor.y = 0.5;
+			
+			rook.position.x = buttons[21+(i*7*12)].position.x;
+			rook.position.y = buttons[21+(i*12)].position.y;
+			
+			stage.addChild(rook);
+			rooks.push(rook);
+			rooks[i].tint = 0x000000;
+		}
+		
+		var knightTexture = PIXI.Texture.fromImage("assets/knight-test.png");
+		var knights = [];
+		for (var i = 0; i < 2; i++){
+			var knight = new PIXI.Sprite(knightTexture);
+			
+			knight.anchor.x = 0.5;
+			knight.anchor.y = 0.5;
+			
+			knight.position.x = buttons[33+(i*5*12)].position.x;
+			knight.position.y = buttons[33+(i*12)].position.y;
+			
+			stage.addChild(knight);
+			knights.push(knight);
+			knights[i].tint = 0x000000;
+		}
+		
+		var bishopTexture = PIXI.Texture.fromImage("assets/bishop-test.png");
+		var bishops = [];
+		for (var i = 0; i < 2; i++){
+			var bishop = new PIXI.Sprite(bishopTexture);
+			
+			bishop.anchor.x = 0.5;
+			bishop.anchor.y = 0.5;
+			
+			bishop.position.x = buttons[45+(i*3*12)].position.x;
+			bishop.position.y = buttons[45+(i*12)].position.y;
+			
+			stage.addChild(bishop);
+			bishops.push(bishop);
+			bishops[i].tint = 0x000000;
+		}
+		
+		var queenTexture = PIXI.Texture.fromImage("assets/queen-test.png");
+		var queens = [];
+		for (var i = 0; i < 1; i++){
+			var queen = new PIXI.Sprite(queenTexture);
+			
+			queen.anchor.x = 0.5;
+			queen.anchor.y = 0.5;
+			
+			queen.position.x = buttons[57].position.x;
+			queen.position.y = buttons[57].position.y;
+			
+			stage.addChild(queen);
+			queens.push(queen);
+			queens[i].tint = 0x000000;
+		}
+		
+		var kingTexture = PIXI.Texture.fromImage("assets/king-test.png");
+		var kings = [];
+		for (var i = 0; i < 1; i++){
+			var king = new PIXI.Sprite(kingTexture);
+			
+			king.anchor.x = 0.5;
+			king.anchor.y = 0.5;
+			
+			king.position.x = buttons[69].position.x;
+			king.position.y = buttons[69].position.y;
+			
+			stage.addChild(king);
+			kings.push(king);
+			kings[i].tint = 0x000000;
+		}
+		
+		//render the scene
+		animate();
+		
+		//functions
+		//render function
+		function animate(){
+			requestAnimFrame(animate);
+			renderer.render(stage);
+			for (var i = 0; i<128; i++){
+				//buttons[i].rotation += 0.005;
+			}
+		}
+		
+		</script>
+	</body>
+</html>
