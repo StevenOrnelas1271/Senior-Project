@@ -34,6 +34,9 @@
 		var currentPosition;
 		var gridNum;
 		var pieceMoved;
+		var white = 0, black = 1;
+		var playerTurn = white;
+		var pieceColor;
 		
 		var wp1 = 1, wp2 = 2, wp3 = 3, wp4 = 4, wp5 = 5, wp6 = 6, wp7 = 7, wp8 = 8;
 		var wr1 = 9, wr2 = 10, wkn1 = 11, wkn2 = 12, wb1 = 13, wb2 = 14;
@@ -119,55 +122,37 @@
 		//set pawns array
 		var pawns = [];
 
-		for (var i = 0; i < 8; i++){
+		for (var i = 0; i < 16; i++){
 			var pawn = new PIXI.Sprite(texture);
 			
 			pawn.anchor.x = 0.5;
 			pawn.anchor.y = 0.5;
 		
-			/*
-			pawn.position.x = buttons[20+(i*12)].position.x;
-			pawn.position.y = buttons[20+(i*12)].position.y;
-			
-			pawn.interactive = true;
-			pawn.mouseover = function(){
-					this.tint=0x00ff00;
-			}
-			mouse pointer leaves a button
-			pawn.mouseout = function(){
-					this.tint=defaultColor;
-			}
-			pawn.mousedown = function(){
-				if (pieceSelected == false){
-					pieceSelected = true;
-					this.tint=0xf00000;
-					currentPiece = this;
-					pieceType = pawns;
-				}
-			
-			}
-			pawn.touchstart = function(){
-				if (pieceSelected == false){
-					pieceSelected = true;
-					this.tint=0xf00000;
-					currentPiece = this;
-					pieceType = pawns;
-				}
-			}
-			*/
 			stage.addChild(pawn);
 			pawns.push(pawn);
-			pawns[i].tint = 0xffffff;
+			if (i < 8){
+				pawns[i].tint = 0xffffff;
+				pawns[i].pieceColor = white;
+			}
+			if (i > 7){
+				pawns[i].tint = 0x000000;
+				pawns[i].pieceColor = black;
+			}	
 		}
 		
-		//initialize piece positions
+		//initialize board states
 		for (var i = 0; i < 120; i++){
 			buttons[i].status = 0;
 		}
+		//Set pawn starting positions
+		//White pawns
 		for (var i = 0; i < 8; i++){
 			buttons[20+(i*12)].status = (i+1);
 		}
-		//buttons[104].status = 8;
+		//black pawns
+		for (var i = 0; i < 8; i++){
+			buttons[15+(i*12)].status = (8+i+1);
+		}
 		/*
 		for (var i = 0; i < 120; i++){
 			if (buttons[i].status == wp1){
@@ -302,7 +287,7 @@
 				if (buttons[i].status == 0){
 					buttons.tint = defaultColor;
 				}
-				for (var j = 0; j < 8; j++)
+				for (var j = 0; j < 16; j++)
 				if (buttons[i].status == j+1) {
 					pawns[j].position.x = buttons[i].position.x;
 					pawns[j].position.y = buttons[i].position.y;
@@ -319,7 +304,7 @@
 				currentPiece = this.status;
 				this.tint=0xf000f0;
 				
-				if (this.status > 0 && this.status < 9){
+				if (this.status > 0 && this.status < 16){
 					pieceType = pawns;
 					pieceType[currentPiece-1].tint = 0x00f0f0;
 				}
@@ -348,8 +333,30 @@
 				log('new grid');
 				log(this.gridNum-2);
 				
-				//pawn movement rules
-				if (currentPosition > this.gridNum && this.gridNum > currentPosition -2){
+				//white pawn movement rules
+				if (pieceType[currentPiece-1].pieceColor == white){
+					if (currentPosition > this.gridNum && this.gridNum > currentPosition -2 && this.status == 0){
+																  
+						log('conditions met!');					
+						log('Piece Moved');
+					
+						//update new location
+						this.status = currentPiece;
+						//update previous location
+						buttons[currentPosition].status = 0;
+					}
+					if (this.status > 0 && (this.gridNum == (currentPosition) - (12+1))){
+						this.status = currentPiece;
+						buttons[currentPosition].status = 0;
+					}
+					if (this.status > 0 && (this.gridnum == (currentPosition) + (12 - 1))){
+						this.status = currentPiece;
+						buttons[currentPosition].status = 0;
+					}
+				}
+				//black pawn movement rules
+				if (pieceType[currentPiece-1].pieceColor == black){
+				if (currentPosition < this.gridNum && this.gridNum < currentPosition +2 && this.status == 0){
 																  
 	  				log('conditions met!');					
 					log('Piece Moved');
@@ -359,10 +366,18 @@
 					//update previous location
 					buttons[currentPosition].status = 0;
 				}
+				}
 
 					//After finishing the move, player no longer has a piece selected
-					pieceType[currentPiece-1].tint = defaultColor;
+					if (pieceType[currentPiece-1].pieceColor == white){
+						pieceType[currentPiece-1].tint = defaultColor;
+						}
+					if (pieceType[currentPiece-1].pieceColor == black){
+						pieceType[currentPiece-1].tint = 0x000000;
+						}
 					currentPiece = 0;
+					if (playerTurn == 0){playerTurn = 1;}
+					if (playerTurn == 1){playerTurn = 0;}
 			}
 		}
 		
