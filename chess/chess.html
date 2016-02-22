@@ -5,8 +5,9 @@
 		<title>PIXI Chess Game</title>
 		<style>
 			body {
-				margin: 0;
+				margin: auto;
 				padding: 0;
+				position: absolute;
 				background-color: #000000;
 			}
 		</style>
@@ -166,6 +167,8 @@
 		for (var i = 0; i < 8; i++){
 			buttons[20+(i*12)].status = (i+1);
 		}
+		//buttons[104].status = 8;
+		/*
 		for (var i = 0; i < 120; i++){
 			if (buttons[i].status == wp1){
 				pawns[0].firstMove == true;
@@ -200,6 +203,7 @@
 				pawns[7].gridNum = buttons[i].gridNum;
 			}
 		}
+		*/
 		
 		/*
 		
@@ -295,14 +299,11 @@
 			for (var i = 0; i<120; i++){
 				//buttons[i].rotation += 0.01;
 				
-				if (buttons[i].status == 1){
-					buttons[i].tint = 0xf0f000;
-				}
 				if (buttons[i].status == 0){
 					buttons.tint = defaultColor;
 				}
-				for (var j = 0; j < 9; j++)
-				if (buttons[i].status == j) {
+				for (var j = 0; j < 8; j++)
+				if (buttons[i].status == j+1) {
 					pawns[j].position.x = buttons[i].position.x;
 					pawns[j].position.y = buttons[i].position.y;
 					pawns[j].gridNum = buttons[i].gridnum;
@@ -318,9 +319,9 @@
 				currentPiece = this.status;
 				this.tint=0xf000f0;
 				
-				if (this.status > 0 && this.status < 8){
+				if (this.status > 0 && this.status < 9){
 					pieceType = pawns;
-					pieceType[currentPiece].tint = 0x00f000;
+					pieceType[currentPiece-1].tint = 0x00f0f0;
 				}
 				
 				log('Piece Selected:');
@@ -360,6 +361,7 @@
 				}
 
 					//After finishing the move, player no longer has a piece selected
+					pieceType[currentPiece-1].tint = defaultColor;
 					currentPiece = 0;
 			}
 		}
