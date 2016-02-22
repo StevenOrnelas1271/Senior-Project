@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
+		<meta charset="UTF-8">
 		<title>PIXI Chess Game</title>
 		<style>
 			body {
@@ -9,12 +10,12 @@
 				background-color: #000000;
 			}
 		</style>
-		<script src="pixi.dev.js"></script>
+		<script src="pixi.js"></script>
 	</head>
 	<body>
 		<script>
 		var stage = new PIXI.Stage(0xaaaaaca);
-		var renderer = PIXI.autoDetectRenderer(800, 700);
+		var renderer = PIXI.autoDetectRenderer(600, 500);
 		document.body.appendChild(renderer.view);
 		
 		// load images from an image path
@@ -23,15 +24,27 @@
 		var eButtonOver = PIXI.Texture.fromImage("assets/pawn-test.png");
 		
 		// global variables
-		var currentPiece;
+		var currentPiece = 0;
 		var pieceSelected = false;
 		var pieceType;
+		var status;
+		var playerNum;
+		var defaultColor = 0xffffff;
+		var currentPosition;
+		var gridNum;
+		var pieceMoved;
+		
+		var wp1 = 1, wp2 = 2, wp3 = 3, wp4 = 4, wp5 = 5, wp6 = 6, wp7 = 7, wp8 = 8;
+		var wr1 = 9, wr2 = 10, wkn1 = 11, wkn2 = 12, wb1 = 13, wb2 = 14;
+		var wq1 = 15, wk = 16;
+		
+		var firstMove;
 		
 		//setup chessboard
 		var container = new PIXI.Stage();	
 		stage.addChild(container);
 		//generate grid image and position
-		var gridsize = 32;
+		var gridsize = 36;
 		
 		for (var j = 0; j < 12; j++){
 			for (var i = 0; i < 10; i++){
@@ -51,18 +64,19 @@
 			container.addChild(grid);
 			}
 		}
-		///*
 		// button layer over the chessboard
 		var buttons = [];
 		var noop = function (){
 			console.log('click');
 		};
 
-		// create a 10 x 12 grid
+		// create a 10 x 12 grid of interactive squares
 		for (var i = 0; i < 10; i++){
-			for (var j = 0; j < 12; j++){
+			for (var j = 0; j < 12; j++){		
 				var button = new PIXI.Sprite(textureButton);
-				//var button = new PIXI.Stage(textureButton);
+				
+				button.status = 0;
+				button.gridNum = (j+i*12);
 				button.buttonMode = true;
 
 				button.anchor.set(0.5);
@@ -72,7 +86,7 @@
 
 				// make the button interactive...
 				button.interactive = true;	
-				
+				//button transparency
 				button.alpha = 0.2;
 				//mouse pointer over a button
 				button.mouseover = function(){
@@ -80,27 +94,14 @@
 				}
 				//mouse pointer leaves a button
 				button.mouseout = function(){
-					this.tint=0xffffff;
+					this.tint=defaultColor;
 				}
-					
-					
-				button.mousedown = function(){
-					if (pieceSelected == true){
-						this.tint=0xf00000;
-						//Pawn movement rules
-						if (pieceType == pawns){
-							if (currentPiece.position.x == this.position.x){
-								if (currentPiece.position.y > this.position.y &&
-															  currentPiece.position.y < (this.position.y)+(2*gridsize)){
-									currentPiece.position.y = this.position.y;
-								}
-							}
-						}
-						pieceSelected = false;
-					}
-					
-				}
-				
+
+				//detect mouseclick
+				button.on('mousedown', movePiece);
+				//add touchscreen support
+				button.on('touchstart', movePiece);
+
 				button.tap = noop;
 				button.click = noop;
 				// add it to the stage
@@ -118,12 +119,12 @@
 		var pawns = [];
 
 		for (var i = 0; i < 8; i++){
-			//var pawn = {firstmove:false};
 			var pawn = new PIXI.Sprite(texture);
-
+			
 			pawn.anchor.x = 0.5;
 			pawn.anchor.y = 0.5;
 		
+			/*
 			pawn.position.x = buttons[20+(i*12)].position.x;
 			pawn.position.y = buttons[20+(i*12)].position.y;
 			
@@ -131,9 +132,9 @@
 			pawn.mouseover = function(){
 					this.tint=0x00ff00;
 			}
-			//mouse pointer leaves a button
+			mouse pointer leaves a button
 			pawn.mouseout = function(){
-					this.tint=0x000000;
+					this.tint=defaultColor;
 			}
 			pawn.mousedown = function(){
 				if (pieceSelected == false){
@@ -142,13 +143,65 @@
 					currentPiece = this;
 					pieceType = pawns;
 				}
-			}
 			
+			}
+			pawn.touchstart = function(){
+				if (pieceSelected == false){
+					pieceSelected = true;
+					this.tint=0xf00000;
+					currentPiece = this;
+					pieceType = pawns;
+				}
+			}
+			*/
 			stage.addChild(pawn);
 			pawns.push(pawn);
-			pawns[i].tint = 0x000000;
-			
+			pawns[i].tint = 0xffffff;
 		}
+		
+		//initialize piece positions
+		for (var i = 0; i < 120; i++){
+			buttons[i].status = 0;
+		}
+		for (var i = 0; i < 8; i++){
+			buttons[20+(i*12)].status = (i+1);
+		}
+		for (var i = 0; i < 120; i++){
+			if (buttons[i].status == wp1){
+				pawns[0].firstMove == true;
+				pawns[0].gridNum = buttons[i].gridNum;
+			}
+			if (buttons[i].status == wp2){
+				pawns[1].firstMove == true;
+				pawns[1].gridNum = buttons[i].gridNum;
+			}
+			if (buttons[i].status == wp3){
+				pawns[2].firstMove == true;
+				pawns[2].gridNum = buttons[i].gridNum;
+			}
+			if (buttons[i].status == wp4){
+				pawns[3].firstMove == true;
+				pawns[3].gridNum = buttons[i].gridNum;
+			}
+			if (buttons[i].status == wp5){
+				pawns[4].firstMove == true;
+				pawns[4].gridNum = buttons[i].gridNum;
+			}
+			if (buttons[i].status == wp6){
+				pawns[5].firstMove == true;
+				pawns[5].gridNum = buttons[i].gridNum;
+			}
+			if (buttons[i].status == wp7){
+				pawns[6].firstMove == true;
+				pawns[6].gridNum = buttons[i].gridNum;
+			}
+			if (buttons[i].status == wp8){
+				pawns[7].firstMove == true;
+				pawns[7].gridNum = buttons[i].gridNum;
+			}
+		}
+		
+		/*
 		
 		var rookTexture = PIXI.Texture.fromImage("assets/rook-test.png");
 		var rooks = [];
@@ -229,6 +282,7 @@
 			kings.push(king);
 			kings[i].tint = 0x000000;
 		}
+*/
 		
 		//render the scene
 		animate();
@@ -236,11 +290,85 @@
 		//functions
 		//render function
 		function animate(){
-			requestAnimFrame(animate);
+			requestAnimationFrame(animate);
 			renderer.render(stage);
-			for (var i = 0; i<128; i++){
-				//buttons[i].rotation += 0.005;
+			for (var i = 0; i<120; i++){
+				//buttons[i].rotation += 0.01;
+				
+				if (buttons[i].status == 1){
+					buttons[i].tint = 0xf0f000;
+				}
+				if (buttons[i].status == 0){
+					buttons.tint = defaultColor;
+				}
+				for (var j = 0; j < 9; j++)
+				if (buttons[i].status == j) {
+					pawns[j].position.x = buttons[i].position.x;
+					pawns[j].position.y = buttons[i].position.y;
+					pawns[j].gridNum = buttons[i].gridnum;
+				}
 			}
+		}
+		
+		function movePiece()
+		{
+			//if no piece is selected...
+			if (currentPiece == 0){
+				pieceMoved = false;
+				currentPiece = this.status;
+				this.tint=0xf000f0;
+				
+				if (this.status > 0 && this.status < 8){
+					pieceType = pawns;
+					pieceType[currentPiece].tint = 0x00f000;
+				}
+				
+				log('Piece Selected:');
+				log(currentPiece);
+				currentPosition = this.gridNum;
+				log('grid selected');
+				log(currentPosition);
+				if (currentPiece > 0){
+					log('currentPiece grid location:');
+					log(pieceType[currentPiece-1].gridNum);
+					return 0;
+				}
+			}
+			
+			//if there is a piece selected...
+			
+			//movement rules
+			//If player has a piece chosen
+			if (currentPiece > 0){
+			
+				//pawn
+				log('current piece original location:');
+				log(currentPosition);
+				log('new grid');
+				log(this.gridNum-2);
+				
+				//pawn movement rules
+				if (currentPosition > this.gridNum && this.gridNum > currentPosition -2){
+																  
+	  				log('conditions met!');					
+					log('Piece Moved');
+					
+					//update new location
+					this.status = currentPiece;
+					//update previous location
+					buttons[currentPosition].status = 0;
+				}
+
+					//After finishing the move, player no longer has a piece selected
+					currentPiece = 0;
+			}
+		}
+		
+		//print error messages for debugging
+		function log(msg) {
+			setTimeout(function() {
+				throw new Error(msg);
+			}, 0);
 		}
 		
 		</script>
