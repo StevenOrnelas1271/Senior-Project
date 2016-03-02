@@ -37,10 +37,12 @@
 		var white = 0, black = 1;
 		var playerTurn = white;
 		var pieceColor;
-		
+		var numPieces = 20;
+
 		var wp1 = 1, wp2 = 2, wp3 = 3, wp4 = 4, wp5 = 5, wp6 = 6, wp7 = 7, wp8 = 8;
-		var wr1 = 9, wr2 = 10, wkn1 = 11, wkn2 = 12, wb1 = 13, wb2 = 14;
-		var wq1 = 15, wk = 16;
+		var bp1 = 9, bp2 = 10, bp3 = 11, bp4 = 12, bp5 = 13, bp6 = 14, bp7 = 15, bp8 = 16;
+		var wr1 = 17, wr2 = 18;
+		var br1 = 19, br2 = 20;
 		
 		var firstMove;
 		
@@ -61,7 +63,7 @@
 					}
 				}
 				else{
-				var grid = PIXI.Sprite.fromImage("assets/knight-test.png");
+				var grid = PIXI.Sprite.fromImage("assets/grass_grid.png");
 				}
 			grid.x = gridsize * i;
 			grid.y = gridsize * j;
@@ -118,12 +120,21 @@
 
 		//pawn
 		// load pawn image
-		var texture = PIXI.Texture.fromImage("assets/pawn-test.png");
+		var pawnTexture = PIXI.Texture.fromImage("assets/pawn-test.png");
+		var rookTexture = PIXI.Texture.fromImage("assets/rook-test.png");
+		var knightTexture = PIXI.Texture.fromImage("assets/knight-test.png");
+		var bishopTexture = PIXI.Texture.fromImage("assets/bishop-test.png");
 		//set pawns array
 		var pawns = [];
 
-		for (var i = 0; i < 16; i++){
-			var pawn = new PIXI.Sprite(texture);
+		//for (var i = 0; i < 16; i++){
+		for (var i = 0; i < 20; i++){
+			if (i >= 0 && i < 16){
+				var pawn = new PIXI.Sprite(pawnTexture);
+			}
+			if (i >= 16 && i < 20){
+				var pawn = new PIXI.Sprite(rookTexture);
+			}
 			
 			pawn.anchor.x = 0.5;
 			pawn.anchor.y = 0.5;
@@ -134,10 +145,19 @@
 				pawns[i].tint = 0xffffff;
 				pawns[i].pieceColor = white;
 			}
-			if (i > 7){
+			if (i > 7 && i < 16){
 				pawns[i].tint = 0x000000;
 				pawns[i].pieceColor = black;
 			}
+			if (i == 16 || i == 17){
+				pawns[i].tint = 0xffffff;
+				pawns[i].pieceColor = white;
+			}
+			if (i == 18 || i == 19){
+				pawns[i].tint = 0x000000;
+				pawns[i].pieceColor = black;
+			}
+			
 			pawns[i].firstMove = true;
 		}
 		
@@ -154,61 +174,15 @@
 		for (var i = 0; i < 8; i++){
 			buttons[15+(i*12)].status = (8+i+1);
 		}
+		//white rooks
+		buttons[21].status = 17;
+		buttons[105].status = 18;
+		//black rooks
+		buttons[14].status = 19;
+		buttons[98].status = 20;
+		
+
 		/*
-		for (var i = 0; i < 120; i++){
-			if (buttons[i].status == wp1){
-				pawns[0].firstMove == true;
-				pawns[0].gridNum = buttons[i].gridNum;
-			}
-			if (buttons[i].status == wp2){
-				pawns[1].firstMove == true;
-				pawns[1].gridNum = buttons[i].gridNum;
-			}
-			if (buttons[i].status == wp3){
-				pawns[2].firstMove == true;
-				pawns[2].gridNum = buttons[i].gridNum;
-			}
-			if (buttons[i].status == wp4){
-				pawns[3].firstMove == true;
-				pawns[3].gridNum = buttons[i].gridNum;
-			}
-			if (buttons[i].status == wp5){
-				pawns[4].firstMove == true;
-				pawns[4].gridNum = buttons[i].gridNum;
-			}
-			if (buttons[i].status == wp6){
-				pawns[5].firstMove == true;
-				pawns[5].gridNum = buttons[i].gridNum;
-			}
-			if (buttons[i].status == wp7){
-				pawns[6].firstMove == true;
-				pawns[6].gridNum = buttons[i].gridNum;
-			}
-			if (buttons[i].status == wp8){
-				pawns[7].firstMove == true;
-				pawns[7].gridNum = buttons[i].gridNum;
-			}
-		}
-		*/
-		
-		/*
-		
-		var rookTexture = PIXI.Texture.fromImage("assets/rook-test.png");
-		var rooks = [];
-		for (var i = 0; i < 2; i++){
-			var rook = new PIXI.Sprite(rookTexture);
-			
-			rook.anchor.x = 0.5;
-			rook.anchor.y = 0.5;
-			
-			rook.position.x = buttons[21+(i*7*12)].position.x;
-			rook.position.y = buttons[21+(i*12)].position.y;
-			
-			stage.addChild(rook);
-			rooks.push(rook);
-			rooks[i].tint = 0x000000;
-		}
-		
 		var knightTexture = PIXI.Texture.fromImage("assets/knight-test.png");
 		var knights = [];
 		for (var i = 0; i < 2; i++){
@@ -288,7 +262,7 @@
 				if (buttons[i].status == 0){
 					buttons.tint = defaultColor;
 				}
-				for (var j = 0; j < 16; j++)
+				for (var j = 0; j < 20; j++)
 				if (buttons[i].status == j+1) {
 					pawns[j].position.x = buttons[i].position.x;
 					pawns[j].position.y = buttons[i].position.y;
@@ -303,13 +277,14 @@
 			if (currentPiece == 0){
 				pieceMoved = false;
 				currentPiece = this.status;
+				log(this.status);
 				this.tint=0xf000f0;
 				
-				if (this.status > 0 && this.status < 17){
+				if (this.status > 0 && this.status < numPieces+1){
 					pieceType = pawns;
 					pieceType[currentPiece-1].tint = 0x00f0f0;
 				}
-				
+
 				log('Piece Selected:');
 				log(currentPiece);
 				currentPosition = this.gridNum;
@@ -328,12 +303,13 @@
 			//If player has a piece chosen
 			if (currentPiece > 0){
 			
-				//pawn
 				log('current piece original location:');
 				log(currentPosition);
 				log('new grid');
 				log(this.gridNum);
 				
+				//PAWNS
+				if (pieceType == pawns){
 				//white pawn movement rules
 				if (pieceType[currentPiece-1].pieceColor == white){
 					//move forward one square
@@ -407,6 +383,8 @@
 						pieceType[currentPiece-1].firstMove = false;
 					}
 				}
+				
+				//ROOKS
 
 				//After finishing the move, player no longer has a piece selected
 				if (pieceType[currentPiece-1].pieceColor == white){
@@ -415,7 +393,7 @@
 				if (pieceType[currentPiece-1].pieceColor == black){
 					pieceType[currentPiece-1].tint = 0x000000;
 					}
-					
+				}
 				currentPiece = 0;
 				
 				//alternante player turns
