@@ -5,50 +5,75 @@ function MapBuilder(walls)
 }
 
 MapBuilder.WALL_HEIGHTS = [
-	256, //lowest slice
-	224,
-	192,
-	160,
-	128  //highest slice
+	256 + 32, //lowest slice
+	224 + 32,
+	192 + 32,
+	160 + 32,
+	128 + 32 //highest slice
 ];
 
 MapBuilder.prototype.createRandomWall = function()
 {
-	/*  var rand = Math.floor((Math.random() * 1) + 1);
-		var length = Math.floor((Math.random() * 15));
-		console.log(rand);
-		switch (rand) {
-			case 1:
-			this.buildOne(length);
-			break;
+	/*var rand = Math.floor((Math.random() * 1) + 1);
+	var length = Math.floor((Math.random() * 15));
+	switch (rand) {
+		case 1:
+			console.log("buildOne called");
+			this.buildOne();
+		break;
 		
-			default:
-			break;
-		}
-		*/
-	this.createGap(1);
+		case 2:
+			console.log("buildTwo called");
+			this.buildTwo();
+		break;
+		
+		default:
+		break;
+	}
+	
+	*/
+	this.createWallSpan(0, 100);
+	/*this.createGap(1);
 	this.createWallSpan(1, 10);
 	this.createGap(2);
 	this.createWallSpan(2, 15);
+	this.createGap(2);
 	this.createWallSpan(3, 10);
-	this.createWallSpan(1, 10);
-	this.createWallSpan(2, 15);
-	this.createWallSpan(3, 10);
-	
-	
 	this.createGap(1);
-
+	this.createWallSpan(1, 10);
+	this.createGap(3);
+	this.createWallSpan(2, 15);
+	this.createGap(1);
+	this.createWallSpan(3, 10);
+	this.createGap(1);
+	this.createGap(10);
+	this.createWallSpan(4, 20);
+	this.createWallSpan(0, 30);
+	*/
+	//this.createWallSpan(0, 200);
+	
 };
 
 MapBuilder.prototype.buildOne = function ()
 {
-	this.createWallSpan(1, 20);
-	this.createGap(1);	
+	//this.createGap(1);
+	this.createWallSpan(4, 10);
+	//this.createWallSpan(3, 5);
+	//this.createWallSpan(2, 10);
+	//this.createGap(15);
+	//this.createWallSpan(2,15);
+	//this.createGap(1);	
+};
+
+MapBuilder.prototype.buildTwo = function()
+{
+	this.createWallSpan(0, 10);
+	//this.createGap(2);
 };
 
 MapBuilder.prototype.createGap = function (spanLength)
 {
-	for (i = 0; i < spanLength; i++)
+	for (var i = 0; i < spanLength; i++)
 	{
 		this.walls.addSlice(SliceType.GAP);
 	}
@@ -56,6 +81,8 @@ MapBuilder.prototype.createGap = function (spanLength)
 
 MapBuilder.prototype.createWallSpan = function (heightIndex, spanLength, noFront, noBack)
 {
+	//noFront passed as true means you do NOT want a front, same for noBack
+	//by default noFront and noBack will be false so a front and a back will be included
 	noFront = noFront || false;
 	noBack  = noBack  || false;
 	
@@ -65,6 +92,7 @@ MapBuilder.prototype.createWallSpan = function (heightIndex, spanLength, noFront
 		spanLength--;
 	}
 	
+	//if you do NOT want a back, use the rest of the spanLength or else reserve 1 piece for a back
 	var midSpanLength = spanLength - (noBack ? 0 : 1);
 	if (midSpanLength > 0)
 	{
@@ -90,7 +118,8 @@ MapBuilder.prototype.createSteppedWallSpan = function (heightIndex, spanALength,
 	this.addWallStep(heightIndex - 2);
 	this.createWallSpan(heightIndex -2, spanBLength - 1, true, false);
 	
-}
+};
+
 MapBuilder.prototype.addWallFront = function(heightIndex)
 {
 	var y = MapBuilder.WALL_HEIGHTS[heightIndex];
@@ -106,7 +135,7 @@ MapBuilder.prototype.addWallBack = function(heightIndex)
 MapBuilder.prototype.addWallMid = function(heightIndex, spanLength)
 {
 	var y = MapBuilder.WALL_HEIGHTS[heightIndex];
-	for (i = 0;i < spanLength; i++)
+	for (var i = 0;i < spanLength; i++)
 	{
 		if (i % 2 == 0)
 		{
@@ -123,4 +152,4 @@ MapBuilder.prototype.addWallStep = function(heightIndex)
 {
 	var y = MapBuilder.WALL_HEIGHTS[heightIndex];
 	this.walls.addSlice(SliceType.STEP, y);	
-}
+};

@@ -16,6 +16,11 @@ function Scroller (stage)
 
 Scroller.prototype.setViewportX = function(viewportX)
 {
+	if(this.front.slicesAreLow())
+	{
+		this.mapBuilder.createRandomWall();
+	}
+
 	this.viewportX = viewportX;
 	this.far.setViewportX(viewportX);
 	this.mid.setViewportX(viewportX);
