@@ -39,28 +39,34 @@ Walls.prototype.removeOldSlices = function(prevViewportSliceX)
 		numOldSlices = Walls.VIEWPORT_NUM_SLICES;
 	}
 	
-	for (i = prevViewportSliceX; i < prevViewportSliceX + numOldSlices; i++)
+	for (var i = prevViewportSliceX; i < prevViewportSliceX + numOldSlices; i++)
 	{
-		var slice = this.slices[i];
+		var slice = this.slices[i - this.removedSlices];
 		if (slice.sprite != null)
 		{
 			this.returnWallSprite(slice.type, slice.sprite);
 			this.removeChild(slice.sprite);
 			slice.sprite = null;
+			//this.removedSlices++; // stops when length - removed = 30
+			//this.slices.shift();
 		}
+			//this.removedSlices++; // stop when length - removed = 20
+			//this.slices.shift();
 	}
 };
 
 Walls.prototype.addNewSlices = function()
 {
 	var firstX = -(this.viewportX % WallSlice.WIDTH);
-	for (i = this.viewportSliceX, sliceIndex = 0;
+	for (var i = this.viewportSliceX, sliceIndex = 0;
 		 i < this.viewportSliceX + Walls.VIEWPORT_NUM_SLICES;
 		 i++, sliceIndex++
 		)
 	{
-
-		var slice = this.slices[i];
+		//console.log("removedSlices: " + this.removedSlices + "i: " + i);
+		if (i - this.removedSlices < 0)
+			console.log("i: " + i + "removedslices: " + this.removedSlices);
+		var slice = this.slices[i - this.removedSlices];
 		//The slice does not have a sprite so link a sprite to this slice.
 		if (slice.sprite == null && slice.type != SliceType.GAP)
 		{
@@ -126,4 +132,10 @@ Walls.prototype.borrowWallSprite = function(SliceType)
 Walls.prototype.returnWallSprite = function(SliceType, SliceSprite)
 {
 	return this.returnWallSpriteLookup[SliceType].call(this.pool, SliceSprite);
+};
+
+Walls.prototype.slicesAreLow = function()
+{
+	//console.log("slices.length: " + this.slices.length);
+	return this.slices.length < 100;
 };

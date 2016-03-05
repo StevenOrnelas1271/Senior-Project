@@ -122,7 +122,7 @@ WallSpritesPool.prototype.addDecorationSprites = function(amount, frameID)
 {
 	for (i = 0; i < amount; i++)
 	{
-		var sprite = new PIXI.Sprite(PIXI.Texture.fromFrame(frameID));
+		var sprite = PIXI.Sprite.fromFrame(frameID);
 		this.decorations.push(sprite);
 	}
 };
@@ -131,7 +131,7 @@ WallSpritesPool.prototype.addFrontEdgeSprites = function(amount, frameID)
 {
 	for (i = 0; i < amount; i++)
 	{
-		var sprite = new PIXI.Sprite(PIXI.Texture.fromFrame(frameID));
+		var sprite = PIXI.Sprite.fromFrame(frameID);
 		this.frontEdges.push(sprite);
 	}
 };
@@ -140,7 +140,7 @@ WallSpritesPool.prototype.addBackEdgeSprites = function(amount, frameID)
 {
 	for (i = 0; i < amount; i++)
 	{
-		var sprite = new PIXI.Sprite(PIXI.Texture.fromFrame(frameID));
+		var sprite = PIXI.Sprite.fromFrame(frameID);
 		sprite.anchor.x = 1;
 		sprite.scale.x = -1;
 		this.backEdges.push(sprite);
@@ -151,7 +151,7 @@ WallSpritesPool.prototype.addStepSprites = function(amount, frameID)
 {
 	for (i = 0; i < amount; i++)
 	{
-		var sprite = new PIXI.Sprite(PIXI.Texture.fromFrame(frameID));
+		var sprite = PIXI.Sprite.fromFrame(frameID);
 		sprite.anchor.y = 0.25;
 		this.steps.push(sprite);
 	}
