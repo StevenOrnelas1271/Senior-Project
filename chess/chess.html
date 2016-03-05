@@ -37,10 +37,16 @@
 		var white = 0, black = 1;
 		var playerTurn = white;
 		var pieceColor;
-		
+		var numPieces = 20;
+		var type;
+		var captured;
+		var rowNum;
+		var colNum;
+
 		var wp1 = 1, wp2 = 2, wp3 = 3, wp4 = 4, wp5 = 5, wp6 = 6, wp7 = 7, wp8 = 8;
-		var wr1 = 9, wr2 = 10, wkn1 = 11, wkn2 = 12, wb1 = 13, wb2 = 14;
-		var wq1 = 15, wk = 16;
+		var bp1 = 9, bp2 = 10, bp3 = 11, bp4 = 12, bp5 = 13, bp6 = 14, bp7 = 15, bp8 = 16;
+		var wr1 = 17, wr2 = 18;
+		var br1 = 19, br2 = 20;
 		
 		var firstMove;
 		
@@ -49,7 +55,7 @@
 		stage.addChild(container);
 		//generate grid image and position
 		var gridsize = 36;
-		
+		/*
 		for (var j = 0; j < 12; j++){
 			for (var i = 0; i < 10; i++){
 				if ((i >= 1 && i <= 8) && (j >= 2 && j <= 9)){
@@ -61,13 +67,14 @@
 					}
 				}
 				else{
-				var grid = PIXI.Sprite.fromImage("assets/knight-test.png");
+				var grid = PIXI.Sprite.fromImage("assets/grass_grid.png");
 				}
 			grid.x = gridsize * i;
 			grid.y = gridsize * j;
 			container.addChild(grid);
 			}
 		}
+		*/
 		// button layer over the chessboard
 		var buttons = [];
 		var noop = function (){
@@ -77,9 +84,26 @@
 		// create a 10 x 12 grid of interactive squares
 		for (var i = 0; i < 10; i++){
 			for (var j = 0; j < 12; j++){		
-				var button = new PIXI.Sprite(textureButton);
+				//var button = new PIXI.Sprite(textureButton);
 				
-				button.status = 0;
+
+				if ((i >= 1 && i <= 8) && (j >= 2 && j <= 9)){
+					if ((i%2 == 0 && j%2 != 0) || i%2 != 0 && j%2 ==0){
+						var button = PIXI.Sprite.fromImage("assets/black_grid.png");
+					}
+					else{
+						var button = PIXI.Sprite.fromImage("assets/white_grid.png");
+						
+					}
+					// initialize board state
+					button.status = 0;
+				}
+				else{
+					var button = PIXI.Sprite.fromImage("assets/grass_grid.png");
+					button.status = -1;
+				}
+					
+				//button.status = 99; // declare invalid square
 				button.gridNum = (j+i*12);
 				button.buttonMode = true;
 
@@ -91,7 +115,7 @@
 				// make the button interactive...
 				button.interactive = true;	
 				//button transparency
-				button.alpha = 0.2;
+				button.alpha = 0.9;
 				//mouse pointer over a button
 				button.mouseover = function(){
 					this.tint=0x00ff00;
@@ -116,99 +140,110 @@
 			}
 		}
 
-		//pawn
+		//Create chess pieces
 		// load pawn image
-		var texture = PIXI.Texture.fromImage("assets/pawn-test.png");
-		//set pawns array
-		var pawns = [];
+		var pawnTexture = PIXI.Texture.fromImage("assets/wpawn1.png");
+		var rookTexture = PIXI.Texture.fromImage("assets/wrook1.png");
+		var knightTexture = PIXI.Texture.fromImage("assets/knight-test.png");
+		var bishopTexture = PIXI.Texture.fromImage("assets/bishop-test.png");
+		var queenTexture = PIXI.Texture.fromImage("assets/queen-test.png");
+		var kingTexture = PIXI.Texture.fromImage("assets/king-test.png");
+		
+		//set pieces array
+		var pieces = [];
 
-		for (var i = 0; i < 16; i++){
-			var pawn = new PIXI.Sprite(texture);
+		//for (var i = 0; i < 16; i++){
+		for (var i = 0; i < 20; i++){
+			if (i >= 0 && i < 16){
+				var piece = new PIXI.Sprite(pawnTexture);
+			}
+			if (i >= 16 && i < 20){
+				var piece = new PIXI.Sprite(rookTexture);
+			}
 			
-			pawn.anchor.x = 0.5;
-			pawn.anchor.y = 0.5;
+			piece.anchor.x = 0.5;
+			piece.anchor.y = 0.5;
 		
-			stage.addChild(pawn);
-			pawns.push(pawn);
+			stage.addChild(piece);
+			pieces.push(piece);
+			
 			if (i < 8){
-				pawns[i].tint = 0xffffff;
-				pawns[i].pieceColor = white;
+				pieces[i].tint = 0xffffff;
+				pieces[i].pieceColor = white;
+				pieces[i].type = 'pawn';
 			}
-			if (i > 7){
-				pawns[i].tint = 0x000000;
-				pawns[i].pieceColor = black;
+			if (i > 7 && i < 16){
+				pieces[i].tint = 0x000000;
+				pieces[i].pieceColor = black;
+				pieces[i].type = 'pawn';
 			}
-			pawns[i].firstMove = true;
+			if (i == 16 || i == 17){
+				pieces[i].tint = 0xffffff;
+				pieces[i].pieceColor = white;
+				pieces[i].type = 'rook';
+			}
+			if (i == 18 || i == 19){
+				pieces[i].tint = 0x000000;
+				pieces[i].pieceColor = black;
+				pieces[i].type = 'rook';
+			}
+			pieces[i].firstMove = true;
 		}
 		
-		//initialize board states
-		for (var i = 0; i < 120; i++){
-			buttons[i].status = 0;
-		}
+		//initialize board states		
+		//for (var i = 0; i < 120; i++){
+		//	buttons[i].status = 0;
+		//}
 		//Set pawn starting positions
-		//White pawns
+		//White pieces
 		for (var i = 0; i < 8; i++){
 			buttons[20+(i*12)].status = (i+1);
 		}
-		//black pawns
+		//black pieces
 		for (var i = 0; i < 8; i++){
 			buttons[15+(i*12)].status = (8+i+1);
 		}
-		/*
+		//white rooks
+		buttons[21].status = 17;
+		buttons[105].status = 18;
+		//black rooks
+		buttons[14].status = 19;
+		buttons[98].status = 20;
+		
+		//declare rows and columns
+		//Rows
+		
+		//Columns
 		for (var i = 0; i < 120; i++){
-			if (buttons[i].status == wp1){
-				pawns[0].firstMove == true;
-				pawns[0].gridNum = buttons[i].gridNum;
+			if (buttons[i].gridNum >=14 && buttons[i].gridNum <= 21){
+				buttons[i].colNum = 1;
 			}
-			if (buttons[i].status == wp2){
-				pawns[1].firstMove == true;
-				pawns[1].gridNum = buttons[i].gridNum;
+			if (buttons[i].gridNum >= 26 && buttons[i].gridNum <= 33){
+				buttons[i].colNum = 2;
 			}
-			if (buttons[i].status == wp3){
-				pawns[2].firstMove == true;
-				pawns[2].gridNum = buttons[i].gridNum;
+			if (buttons[i].gridNum >=38 && buttons[i].gridNum <= 45){
+				buttons[i].colNum = 3;
 			}
-			if (buttons[i].status == wp4){
-				pawns[3].firstMove == true;
-				pawns[3].gridNum = buttons[i].gridNum;
+			if (buttons[i].gridNum >=50 && buttons[i].gridNum <= 57){
+				buttons[i].colNum = 4;
 			}
-			if (buttons[i].status == wp5){
-				pawns[4].firstMove == true;
-				pawns[4].gridNum = buttons[i].gridNum;
+			if (buttons[i].gridNum >=62 && buttons[i].gridNum <= 69){
+				buttons[i].colNum = 5;
 			}
-			if (buttons[i].status == wp6){
-				pawns[5].firstMove == true;
-				pawns[5].gridNum = buttons[i].gridNum;
+			if (buttons[i].gridNum >=74 && buttons[i].gridNum <= 81){
+				buttons[i].colNum = 6;
 			}
-			if (buttons[i].status == wp7){
-				pawns[6].firstMove == true;
-				pawns[6].gridNum = buttons[i].gridNum;
+			if (buttons[i].gridNum >=86 && buttons[i].gridNum <= 93){
+				buttons[i].colNum = 7;
 			}
-			if (buttons[i].status == wp8){
-				pawns[7].firstMove == true;
-				pawns[7].gridNum = buttons[i].gridNum;
+			if (buttons[i].gridNum >=98 && buttons[i].gridNum <= 105){
+				buttons[i].colNum = 8;
 			}
+			
 		}
-		*/
 		
+
 		/*
-		
-		var rookTexture = PIXI.Texture.fromImage("assets/rook-test.png");
-		var rooks = [];
-		for (var i = 0; i < 2; i++){
-			var rook = new PIXI.Sprite(rookTexture);
-			
-			rook.anchor.x = 0.5;
-			rook.anchor.y = 0.5;
-			
-			rook.position.x = buttons[21+(i*7*12)].position.x;
-			rook.position.y = buttons[21+(i*12)].position.y;
-			
-			stage.addChild(rook);
-			rooks.push(rook);
-			rooks[i].tint = 0x000000;
-		}
-		
 		var knightTexture = PIXI.Texture.fromImage("assets/knight-test.png");
 		var knights = [];
 		for (var i = 0; i < 2; i++){
@@ -288,11 +323,12 @@
 				if (buttons[i].status == 0){
 					buttons.tint = defaultColor;
 				}
-				for (var j = 0; j < 16; j++)
+				for (var j = 0; j < 20; j++)
 				if (buttons[i].status == j+1) {
-					pawns[j].position.x = buttons[i].position.x;
-					pawns[j].position.y = buttons[i].position.y;
-					pawns[j].gridNum = buttons[i].gridnum;
+					pieces[j].position.x = buttons[i].position.x;
+					pieces[j].position.y = buttons[i].position.y;
+					pieces[j].gridNum = buttons[i].gridnum;
+					pieces[j].colNum = buttons[i].colNum;
 				}
 			}
 		}
@@ -303,22 +339,28 @@
 			if (currentPiece == 0){
 				pieceMoved = false;
 				currentPiece = this.status;
+				log(this.status);
 				this.tint=0xf000f0;
 				
-				if (this.status > 0 && this.status < 17){
-					pieceType = pawns;
+				if (this.status > 0 && this.status < numPieces+1){
+					pieceType = pieces;
 					pieceType[currentPiece-1].tint = 0x00f0f0;
 				}
-				
+
 				log('Piece Selected:');
 				log(currentPiece);
 				currentPosition = this.gridNum;
 				log('grid selected');
 				log(currentPosition);
+				if (currentPiece < 0){
+					currentPiece = 0;
+				}
+				
 				if (currentPiece > 0){
-					log('currentPiece grid location:');
-					log(pieceType[currentPiece-1].gridNum);
-					return 0;
+					log('currentPiece type:');
+					//log(pieceType[currentPiece-1].gridNum);
+					log(pieceType[currentPiece-1].type);
+					return;
 				}
 			}
 			
@@ -328,94 +370,118 @@
 			//If player has a piece chosen
 			if (currentPiece > 0){
 			
-				//pawn
 				log('current piece original location:');
 				log(currentPosition);
 				log('new grid');
 				log(this.gridNum);
-				
-				//white pawn movement rules
-				if (pieceType[currentPiece-1].pieceColor == white){
-					//move forward one square
-					if (this.gridNum == currentPosition -1 && this.status == 0){
-																  
-						log('conditions met!');					
-						log('Piece Moved');
-					
-						//update new location
-						this.status = currentPiece;
-						//update previous location
-						buttons[currentPosition].status = 0;
-						pieceType[currentPiece-1].firstMove = false;
-					}
-					//move forward rwo squares IF first move only
-					if (pieceType[currentPiece-1].firstMove == true){
-						if (this.gridNum == currentPosition -2 && this.status == 0){
-							//update new location
-							this.status = currentPiece;
-							//update previous location
-							buttons[currentPosition].status = 0;
-							pieceType[currentPiece-1].firstMove = false;
-						}
-					}
-					//capture diagonal left
-					//if (this.status > 0 && (this.gridNum == (currentPosition) - (12+1))){
-					if (this.status > 0 && ((currentPosition) - (12+1)) == this.gridNum){
-						this.status = currentPiece;
-						buttons[currentPosition].status = 0;
-						pieceType[currentPiece-1].firstMove = false;
-					}
-					//capture diagonal right
-					//if (this.status > 0 && (this.gridnum == (currentPosition) + (12-1))){
-					if (this.status > 0 && ((currentPosition) + (12-1)) == this.gridNum){
-						this.status = currentPiece;
-						buttons[currentPosition].status = 0;
-						pieceType[currentPiece-1].firstMove = false;
-					}
-				}
-				//black pawn movement rules
-				if (pieceType[currentPiece-1].pieceColor == black){
-					if (this.gridNum == currentPosition +1 && this.status == 0){
-																  
-						log('conditions met!');					
-						log('Piece Moved');
-					
-						//update new location
-						this.status = currentPiece;
-						//update previous location
-						buttons[currentPosition].status = 0;
-						pieceType[currentPiece-1].firstMove = false;
-					}
-					//move forward rwo squares IF first move only
-					if (pieceType[currentPiece-1].firstMove == true){
-						if (this.gridNum == currentPosition +2 && this.status == 0){
-							//update new location
-							this.status = currentPiece;
-							//update previous location
-							buttons[currentPosition].status = 0;
-							pieceType[currentPiece-1].firstMove = false;
-						}
-					}
-					if (this.status > 0 && ((currentPosition) - (12-1)) == this.gridNum){
-						this.status = currentPiece;
-						buttons[currentPosition].status = 0;
-						pieceType[currentPiece-1].firstMove = false;
-					}
-					if (this.status > 0 && ((currentPosition) + (12+1)) == this.gridNum){
-						this.status = currentPiece;
-						buttons[currentPosition].status = 0;
-						pieceType[currentPiece-1].firstMove = false;
-					}
-				}
 
+				//PAWNS
+				//white pawn movement rules
+				if (pieceType[currentPiece-1].type == 'pawn'){
+					if (pieceType[currentPiece-1].pieceColor == white){
+						//move forward one square
+						if (this.gridNum == currentPosition -1 && this.status == 0){
+																  
+							log('conditions met!');					
+							log('Piece Moved');
+					
+							//update new location
+							this.status = currentPiece;
+							//update previous location
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+						//move forward rwo squares IF first move only
+						if (pieceType[currentPiece-1].firstMove == true){
+							if (this.gridNum == currentPosition -2 && this.status == 0){
+								//update new location
+								this.status = currentPiece;
+								//update previous location
+								buttons[currentPosition].status = 0;
+								pieceType[currentPiece-1].firstMove = false;
+							}
+						}
+						//capture diagonal left
+						//if (this.status > 0 && (this.gridNum == (currentPosition) - (12+1))){
+						if (this.status > 0 && ((currentPosition) - (12+1)) == this.gridNum){
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+						//capture diagonal right
+						//if (this.status > 0 && (this.gridnum == (currentPosition) + (12-1))){
+						if (this.status > 0 && ((currentPosition) + (12-1)) == this.gridNum){
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+					}
+					//black pawn movement rules
+					if (pieceType[currentPiece-1].pieceColor == black){
+						if (this.gridNum == currentPosition +1 && this.status == 0){
+																  
+							log('conditions met!');					
+							log('Piece Moved');
+					
+							//update new location
+							this.status = currentPiece;
+							//update previous location
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+						//move forward rwo squares IF first move only
+						if (pieceType[currentPiece-1].firstMove == true){
+							if (this.gridNum == currentPosition +2 && this.status == 0){
+								//update new location
+								this.status = currentPiece;
+								//update previous location
+								buttons[currentPosition].status = 0;
+								pieceType[currentPiece-1].firstMove = false;
+							}
+						}
+						if (this.status > 0 && ((currentPosition) - (12-1)) == this.gridNum){
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+						if (this.status > 0 && ((currentPosition) + (12+1)) == this.gridNum){
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+					}
+				}
+				
+				//ROOKS
+				if (pieceType[currentPiece-1].type == 'rook'){
+					if (this.status == 0){
+						/*
+						if (this.colNum == pieceType[currentPiece-1].colNum){
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+						*/
+						for (var i = 0; i < 8; i++){
+							if (this.gridNum > currentPosition && this.status != -1){
+								if ((buttons[currentPosition+i].status) == 0){
+									this.status = currentPiece;
+									buttons[currentPosition].status = 0;
+									pieceType[currentPiece-1].firstMove = false;
+								}
+							}
+						}	
+					}
+				}
+				
 				//After finishing the move, player no longer has a piece selected
 				if (pieceType[currentPiece-1].pieceColor == white){
 					pieceType[currentPiece-1].tint = defaultColor;
-					}
+				}
 				if (pieceType[currentPiece-1].pieceColor == black){
 					pieceType[currentPiece-1].tint = 0x000000;
-					}
-					
+				}
+				
 				currentPiece = 0;
 				
 				//alternante player turns
