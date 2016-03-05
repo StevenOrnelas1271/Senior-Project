@@ -40,6 +40,8 @@
 		var numPieces = 20;
 		var type;
 		var captured;
+		var rowNum;
+		var colNum;
 
 		var wp1 = 1, wp2 = 2, wp3 = 3, wp4 = 4, wp5 = 5, wp6 = 6, wp7 = 7, wp8 = 8;
 		var bp1 = 9, bp2 = 10, bp3 = 11, bp4 = 12, bp5 = 13, bp6 = 14, bp7 = 15, bp8 = 16;
@@ -53,7 +55,7 @@
 		stage.addChild(container);
 		//generate grid image and position
 		var gridsize = 36;
-		
+		/*
 		for (var j = 0; j < 12; j++){
 			for (var i = 0; i < 10; i++){
 				if ((i >= 1 && i <= 8) && (j >= 2 && j <= 9)){
@@ -72,6 +74,7 @@
 			container.addChild(grid);
 			}
 		}
+		*/
 		// button layer over the chessboard
 		var buttons = [];
 		var noop = function (){
@@ -81,9 +84,26 @@
 		// create a 10 x 12 grid of interactive squares
 		for (var i = 0; i < 10; i++){
 			for (var j = 0; j < 12; j++){		
-				var button = new PIXI.Sprite(textureButton);
+				//var button = new PIXI.Sprite(textureButton);
 				
-				button.status = 0;
+
+				if ((i >= 1 && i <= 8) && (j >= 2 && j <= 9)){
+					if ((i%2 == 0 && j%2 != 0) || i%2 != 0 && j%2 ==0){
+						var button = PIXI.Sprite.fromImage("assets/black_grid.png");
+					}
+					else{
+						var button = PIXI.Sprite.fromImage("assets/white_grid.png");
+						
+					}
+					// initialize board state
+					button.status = 0;
+				}
+				else{
+					var button = PIXI.Sprite.fromImage("assets/grass_grid.png");
+					button.status = -1;
+				}
+					
+				//button.status = 99; // declare invalid square
 				button.gridNum = (j+i*12);
 				button.buttonMode = true;
 
@@ -95,7 +115,7 @@
 				// make the button interactive...
 				button.interactive = true;	
 				//button transparency
-				button.alpha = 0.2;
+				button.alpha = 0.9;
 				//mouse pointer over a button
 				button.mouseover = function(){
 					this.tint=0x00ff00;
@@ -122,10 +142,13 @@
 
 		//Create chess pieces
 		// load pawn image
-		var pawnTexture = PIXI.Texture.fromImage("assets/pawn-test.png");
-		var rookTexture = PIXI.Texture.fromImage("assets/rook-test.png");
+		var pawnTexture = PIXI.Texture.fromImage("assets/wpawn1.png");
+		var rookTexture = PIXI.Texture.fromImage("assets/wrook1.png");
 		var knightTexture = PIXI.Texture.fromImage("assets/knight-test.png");
 		var bishopTexture = PIXI.Texture.fromImage("assets/bishop-test.png");
+		var queenTexture = PIXI.Texture.fromImage("assets/queen-test.png");
+		var kingTexture = PIXI.Texture.fromImage("assets/king-test.png");
+		
 		//set pieces array
 		var pieces = [];
 
@@ -153,26 +176,24 @@
 				pieces[i].tint = 0x000000;
 				pieces[i].pieceColor = black;
 				pieces[i].type = 'pawn';
-				
 			}
 			if (i == 16 || i == 17){
 				pieces[i].tint = 0xffffff;
 				pieces[i].pieceColor = white;
-				pieces.type = 'rook';
+				pieces[i].type = 'rook';
 			}
 			if (i == 18 || i == 19){
 				pieces[i].tint = 0x000000;
 				pieces[i].pieceColor = black;
-				pieces.type = 'rook';
+				pieces[i].type = 'rook';
 			}
-			
 			pieces[i].firstMove = true;
 		}
 		
-		//initialize board states
-		for (var i = 0; i < 120; i++){
-			buttons[i].status = 0;
-		}
+		//initialize board states		
+		//for (var i = 0; i < 120; i++){
+		//	buttons[i].status = 0;
+		//}
 		//Set pawn starting positions
 		//White pieces
 		for (var i = 0; i < 8; i++){
@@ -188,6 +209,38 @@
 		//black rooks
 		buttons[14].status = 19;
 		buttons[98].status = 20;
+		
+		//declare rows and columns
+		//Rows
+		
+		//Columns
+		for (var i = 0; i < 120; i++){
+			if (buttons[i].gridNum >=14 && buttons[i].gridNum <= 21){
+				buttons[i].colNum = 1;
+			}
+			if (buttons[i].gridNum >= 26 && buttons[i].gridNum <= 33){
+				buttons[i].colNum = 2;
+			}
+			if (buttons[i].gridNum >=38 && buttons[i].gridNum <= 45){
+				buttons[i].colNum = 3;
+			}
+			if (buttons[i].gridNum >=50 && buttons[i].gridNum <= 57){
+				buttons[i].colNum = 4;
+			}
+			if (buttons[i].gridNum >=62 && buttons[i].gridNum <= 69){
+				buttons[i].colNum = 5;
+			}
+			if (buttons[i].gridNum >=74 && buttons[i].gridNum <= 81){
+				buttons[i].colNum = 6;
+			}
+			if (buttons[i].gridNum >=86 && buttons[i].gridNum <= 93){
+				buttons[i].colNum = 7;
+			}
+			if (buttons[i].gridNum >=98 && buttons[i].gridNum <= 105){
+				buttons[i].colNum = 8;
+			}
+			
+		}
 		
 
 		/*
@@ -275,6 +328,7 @@
 					pieces[j].position.x = buttons[i].position.x;
 					pieces[j].position.y = buttons[i].position.y;
 					pieces[j].gridNum = buttons[i].gridnum;
+					pieces[j].colNum = buttons[i].colNum;
 				}
 			}
 		}
@@ -298,10 +352,15 @@
 				currentPosition = this.gridNum;
 				log('grid selected');
 				log(currentPosition);
+				if (currentPiece < 0){
+					currentPiece = 0;
+				}
+				
 				if (currentPiece > 0){
-					log('currentPiece grid location:');
-					log(pieceType[currentPiece-1].gridNum);
-					return 0;
+					log('currentPiece type:');
+					//log(pieceType[currentPiece-1].gridNum);
+					log(pieceType[currentPiece-1].type);
+					return;
 				}
 			}
 			
@@ -315,7 +374,7 @@
 				log(currentPosition);
 				log('new grid');
 				log(this.gridNum);
-				
+
 				//PAWNS
 				//white pawn movement rules
 				if (pieceType[currentPiece-1].type == 'pawn'){
@@ -395,7 +454,26 @@
 				
 				//ROOKS
 				if (pieceType[currentPiece-1].type == 'rook'){
+					if (this.status == 0){
+						/*
+						if (this.colNum == pieceType[currentPiece-1].colNum){
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+						*/
+						for (var i = 0; i < 8; i++){
+							if (this.gridNum > currentPosition && this.status != -1){
+								if ((buttons[currentPosition+i].status) == 0){
+									this.status = currentPiece;
+									buttons[currentPosition].status = 0;
+									pieceType[currentPiece-1].firstMove = false;
+								}
+							}
+						}	
+					}
 				}
+				
 				//After finishing the move, player no longer has a piece selected
 				if (pieceType[currentPiece-1].pieceColor == white){
 					pieceType[currentPiece-1].tint = defaultColor;
