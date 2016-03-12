@@ -37,7 +37,7 @@
 		var white = 0, black = 1;
 		var playerTurn = white;
 		var pieceColor;
-		var numPieces = 20;
+		var numPieces = 32;
 		var type;
 		var captured;
 		var rowNum;
@@ -89,11 +89,10 @@
 
 				if ((i >= 1 && i <= 8) && (j >= 2 && j <= 9)){
 					if ((i%2 == 0 && j%2 != 0) || i%2 != 0 && j%2 ==0){
-						var button = PIXI.Sprite.fromImage("assets/black_grid.png");
+						var button = PIXI.Sprite.fromImage("assets/white_grid.png");
 					}
 					else{
-						var button = PIXI.Sprite.fromImage("assets/white_grid.png");
-						
+						var button = PIXI.Sprite.fromImage("assets/black_grid.png");
 					}
 					// initialize board state
 					button.status = 0;
@@ -102,6 +101,10 @@
 					var button = PIXI.Sprite.fromImage("assets/grass_grid.png");
 					button.status = -1;
 				}
+				
+				//declare row and column numbers
+				button.colNum = i;
+				button.rowNum = j;
 					
 				//button.status = 99; // declare invalid square
 				button.gridNum = (j+i*12);
@@ -144,21 +147,35 @@
 		// load pawn image
 		var pawnTexture = PIXI.Texture.fromImage("assets/wpawn1.png");
 		var rookTexture = PIXI.Texture.fromImage("assets/wrook1.png");
-		var knightTexture = PIXI.Texture.fromImage("assets/knight-test.png");
-		var bishopTexture = PIXI.Texture.fromImage("assets/bishop-test.png");
-		var queenTexture = PIXI.Texture.fromImage("assets/queen-test.png");
-		var kingTexture = PIXI.Texture.fromImage("assets/king-test.png");
+		var knightTexture = PIXI.Texture.fromImage("assets/wknight1.png");
+		var bishopTexture = PIXI.Texture.fromImage("assets/wbishop1.png");
+		var queenTexture = PIXI.Texture.fromImage("assets/wqueen1.png");
+		var kingTexture = PIXI.Texture.fromImage("assets/wking1.png");
 		
 		//set pieces array
 		var pieces = [];
 
 		//for (var i = 0; i < 16; i++){
-		for (var i = 0; i < 20; i++){
+		for (var i = 0; i < numPieces; i++){
+		
+			//assign textures
 			if (i >= 0 && i < 16){
 				var piece = new PIXI.Sprite(pawnTexture);
 			}
 			if (i >= 16 && i < 20){
 				var piece = new PIXI.Sprite(rookTexture);
+			}
+			if (i >= 20 && i < 24){
+				var piece = new PIXI.Sprite(knightTexture);
+			}
+			if (i >= 24 && i < 28){
+				var piece = new PIXI.Sprite(bishopTexture);
+			}
+			if (i == 28 || i == 29){
+				var piece = new PIXI.Sprite(kingTexture);
+			}
+			if (i >= 30 && i < numPieces){
+				var piece = new PIXI.Sprite(queenTexture);
 			}
 			
 			piece.anchor.x = 0.5;
@@ -172,7 +189,7 @@
 				pieces[i].pieceColor = white;
 				pieces[i].type = 'pawn';
 			}
-			if (i > 7 && i < 16){
+			if (i >= 8 && i < 16){
 				pieces[i].tint = 0x000000;
 				pieces[i].pieceColor = black;
 				pieces[i].type = 'pawn';
@@ -187,19 +204,56 @@
 				pieces[i].pieceColor = black;
 				pieces[i].type = 'rook';
 			}
+			if (i == 20 || i == 21){
+				pieces[i].tint = 0xffffff;
+				pieces[i].pieceColor = white;
+				pieces[i].type = 'knight';
+			}
+			if (i == 22 || i == 23){
+				pieces[i].tint = 0x000000;
+				pieces[i].pieceColor = black;
+				pieces[i].type = 'knight';
+			}
+			if (i == 24 || i == 25){
+				pieces[i].tint = 0xffffff;
+				pieces[i].pieceColor = white;
+				pieces[i].type = 'bishop';
+			}
+			if (i == 26 || i == 27){
+				pieces[i].tint = 0x000000;
+				pieces[i].pieceColor = black;
+				pieces[i].type = 'bishop';
+			}
+			if (i == 28){
+				pieces[i].tint = 0xffffff;
+				pieces[i].pieceColor = white;
+				pieces[i].type = 'king';
+			}
+			if (i == 29){
+				pieces[i].tint = 0x000000;
+				pieces[i].pieceColor = black;
+				pieces[i].type = 'king';
+			}
+			if (i == 30){
+				pieces[i].tint = 0xffffff;
+				pieces[i].pieceColor = white;
+				pieces[i].type = 'queen';
+			}
+			if (i == 31){
+				pieces[i].tint = 0x000000;
+				pieces[i].pieceColor = black;
+				pieces[i].type = 'queen';
+			}
 			pieces[i].firstMove = true;
 		}
 		
 		//initialize board states		
-		//for (var i = 0; i < 120; i++){
-		//	buttons[i].status = 0;
-		//}
 		//Set pawn starting positions
-		//White pieces
+		//White pawns
 		for (var i = 0; i < 8; i++){
 			buttons[20+(i*12)].status = (i+1);
 		}
-		//black pieces
+		//black pawns
 		for (var i = 0; i < 8; i++){
 			buttons[15+(i*12)].status = (8+i+1);
 		}
@@ -210,72 +264,31 @@
 		buttons[14].status = 19;
 		buttons[98].status = 20;
 		
-		//declare rows and columns
-		//Rows
+		//white knights
+		buttons[33].status = 21;
+		buttons[93].status = 22;
+		//black knights
+		buttons[26].status = 23;
+		buttons[86].status = 24;
 		
-		//Columns
-		for (var i = 0; i < 120; i++){
-			if (buttons[i].gridNum >=14 && buttons[i].gridNum <= 21){
-				buttons[i].colNum = 1;
-			}
-			if (buttons[i].gridNum >= 26 && buttons[i].gridNum <= 33){
-				buttons[i].colNum = 2;
-			}
-			if (buttons[i].gridNum >=38 && buttons[i].gridNum <= 45){
-				buttons[i].colNum = 3;
-			}
-			if (buttons[i].gridNum >=50 && buttons[i].gridNum <= 57){
-				buttons[i].colNum = 4;
-			}
-			if (buttons[i].gridNum >=62 && buttons[i].gridNum <= 69){
-				buttons[i].colNum = 5;
-			}
-			if (buttons[i].gridNum >=74 && buttons[i].gridNum <= 81){
-				buttons[i].colNum = 6;
-			}
-			if (buttons[i].gridNum >=86 && buttons[i].gridNum <= 93){
-				buttons[i].colNum = 7;
-			}
-			if (buttons[i].gridNum >=98 && buttons[i].gridNum <= 105){
-				buttons[i].colNum = 8;
-			}
-			
-		}
+		//white bishops
+		buttons[45].status = 25;
+		buttons[81].status = 26;
+		//black bishops
+		buttons[38].status = 27;
+		buttons[74].status = 28;
 		
-
+		//white king
+		buttons[57].status = 29;
+		//black king
+		buttons[50].status = 30;
+		
+		//white queen
+		buttons[69].status = 31;
+		//black queen
+		buttons[62].status = 32;
+		
 		/*
-		var knightTexture = PIXI.Texture.fromImage("assets/knight-test.png");
-		var knights = [];
-		for (var i = 0; i < 2; i++){
-			var knight = new PIXI.Sprite(knightTexture);
-			
-			knight.anchor.x = 0.5;
-			knight.anchor.y = 0.5;
-			
-			knight.position.x = buttons[33+(i*5*12)].position.x;
-			knight.position.y = buttons[33+(i*12)].position.y;
-			
-			stage.addChild(knight);
-			knights.push(knight);
-			knights[i].tint = 0x000000;
-		}
-		
-		var bishopTexture = PIXI.Texture.fromImage("assets/bishop-test.png");
-		var bishops = [];
-		for (var i = 0; i < 2; i++){
-			var bishop = new PIXI.Sprite(bishopTexture);
-			
-			bishop.anchor.x = 0.5;
-			bishop.anchor.y = 0.5;
-			
-			bishop.position.x = buttons[45+(i*3*12)].position.x;
-			bishop.position.y = buttons[45+(i*12)].position.y;
-			
-			stage.addChild(bishop);
-			bishops.push(bishop);
-			bishops[i].tint = 0x000000;
-		}
-		
 		var queenTexture = PIXI.Texture.fromImage("assets/queen-test.png");
 		var queens = [];
 		for (var i = 0; i < 1; i++){
@@ -323,11 +336,12 @@
 				if (buttons[i].status == 0){
 					buttons.tint = defaultColor;
 				}
-				for (var j = 0; j < 20; j++)
+				for (var j = 0; j < numPieces; j++)
 				if (buttons[i].status == j+1) {
 					pieces[j].position.x = buttons[i].position.x;
 					pieces[j].position.y = buttons[i].position.y;
 					pieces[j].gridNum = buttons[i].gridnum;
+					pieces[j].rowNum = buttons[i].rowNum;
 					pieces[j].colNum = buttons[i].colNum;
 				}
 			}
@@ -341,6 +355,10 @@
 				currentPiece = this.status;
 				log(this.status);
 				this.tint=0xf000f0;
+				log("rowNum = ");
+				log(this.rowNum);
+				log("colNum = ");
+				log(this.colNum);
 				
 				if (this.status > 0 && this.status < numPieces+1){
 					pieceType = pieces;
@@ -401,15 +419,14 @@
 								pieceType[currentPiece-1].firstMove = false;
 							}
 						}
+						
 						//capture diagonal left
-						//if (this.status > 0 && (this.gridNum == (currentPosition) - (12+1))){
 						if (this.status > 0 && ((currentPosition) - (12+1)) == this.gridNum){
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
 						}
 						//capture diagonal right
-						//if (this.status > 0 && (this.gridnum == (currentPosition) + (12-1))){
 						if (this.status > 0 && ((currentPosition) + (12-1)) == this.gridNum){
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
@@ -455,22 +472,31 @@
 				//ROOKS
 				if (pieceType[currentPiece-1].type == 'rook'){
 					if (this.status == 0){
-						/*
-						if (this.colNum == pieceType[currentPiece-1].colNum){
+						// Legal moves: same column or same row
+						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
 						}
-						*/
-						for (var i = 0; i < 8; i++){
-							if (this.gridNum > currentPosition && this.status != -1){
-								if ((buttons[currentPosition+i].status) == 0){
-									this.status = currentPiece;
-									buttons[currentPosition].status = 0;
-									pieceType[currentPiece-1].firstMove = false;
-								}
-							}
-						}	
+					}
+				}
+				
+				//KNIGHT
+				if (pieceType[currentPiece-1].type == 'knight'){
+					if (this.status == 0){
+						if ((	this.rowNum == pieceType[currentPiece-1].rowNum -2 && this.colNum == pieceType[currentPiece-1].colNum -1)
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum -2)
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum -2)
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum +2 && this.colNum == pieceType[currentPiece-1].colNum -1)
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum -2 && this.colNum == pieceType[currentPiece-1].colNum +1)
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum +2)
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum +2)
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum +2 && this.colNum == pieceType[currentPiece-1].colNum +1)){
+							
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
 					}
 				}
 				
