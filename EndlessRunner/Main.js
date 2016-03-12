@@ -5,10 +5,14 @@ function Main()
 											);
 	this.loadSpriteSheet();
 	this.i = 0;
+	
+	
+	window.addEventListener('keydown', this.keyPressed.bind(this), false);
 }
 
 //Static scrolling speed
-Main.SCROLL_SPEED = 7;
+//fast scrolling = 7
+Main.SCROLL_SPEED = 5;
 
 //dynamic scrolling speed
 /*
@@ -16,6 +20,15 @@ Main.MIN_SCROLL_SPEED = 5;
 Main.MAX_SCROLL_SPEED = 15;
 Main.SCROLL_ACCELERATION = 0.005;
 */
+
+Main.prototype.keyPressed = function (event)
+{
+	if (event.keyCode == 107)
+	{
+		console.log("+ pressed");
+	}
+};
+
 Main.prototype.update = function()
 {
 	this.scroller.moveViewportXBy(Main.SCROLL_SPEED);
@@ -49,7 +62,6 @@ Main.prototype.spriteSheetLoaded = function()
 	this.pool = new WallSpritesPool();
 	this.wallSlices = [];
 	
-	console.log("main new character");
 	this.character = new Character();
 	this.characterSprites = [];
 };

@@ -2,8 +2,9 @@ function CharacterSpritesPool()
 {
 	this.createDead();
 	this.createIdle();
-	this.createRun();
 	this.createJump();
+	this.createRun();
+	this.createSlide();
 }
 
 /*-----------------------------------Dead Sprites--------------------------------*/
@@ -14,7 +15,7 @@ CharacterSpritesPool.prototype.createDead = function()
 	for (i = 0; i < 10; i++)
 	{
 		var resourceString = "resources/Dead__00" + i + ".png";
-		console.log(resourceString);
+		
 		var sprite = PIXI.Sprite.fromImage(resourceString);
 		this.deadSprites.push(sprite);
 	}
@@ -38,7 +39,7 @@ CharacterSpritesPool.prototype.createIdle = function()
 	for (i = 0; i < 10; i++)
 	{
 		var resourceString = "resources/Idle__00" + i + ".png";
-		console.log(resourceString);
+		
 		var sprite = PIXI.Sprite.fromImage(resourceString);
 		this.idleSprites.push(sprite);
 	}
@@ -62,7 +63,7 @@ CharacterSpritesPool.prototype.createJump = function()
 	for (i = 0; i < 10; i++)
 	{
 		var resourceString = "resources/Jump__00" + i + ".png";
-		console.log(resourceString);
+		
 		var sprite = PIXI.Sprite.fromImage(resourceString);
 		this.jumpSprites.push(sprite);
 	}
@@ -78,7 +79,7 @@ CharacterSpritesPool.prototype.returnJumpSprites = function(sprite)
 	this.jumpSprites.push(sprite);	
 };
 
-/*--------------------------------Running Sprites--------------------------------*/
+/*------------------------------------Run Sprites--------------------------------*/
 CharacterSpritesPool.prototype.createRun = function()
 {
 	this.runSprites = [];
@@ -86,7 +87,7 @@ CharacterSpritesPool.prototype.createRun = function()
 	for (i = 0; i < 10; i++)
 	{
 		var resourceString = "resources/Run__00" + i + ".png";
-		console.log(resourceString);
+		
 		var sprite = PIXI.Sprite.fromImage(resourceString);
 		this.runSprites.push(sprite);
 	}
@@ -100,4 +101,28 @@ CharacterSpritesPool.prototype.borrowRunSprites = function()
 CharacterSpritesPool.prototype.returnRunSprites = function(sprite)
 {
 	this.runSprites.push(sprite);	
+};
+
+/*----------------------------------Slide Sprites--------------------------------*/
+CharacterSpritesPool.prototype.createSlide = function()
+{
+	this.slideSprites = [];
+	
+	for (i = 0; i < 10; i++)
+	{
+		var resourceString = "resources/Slide__00" + i + ".png";
+		
+		var sprite = PIXI.Sprite.fromImage(resourceString);
+		this.slideSprites.push(sprite);
+	}
+};
+
+CharacterSpritesPool.prototype.borrowSlideSprites = function()
+{
+	return this.slideSprites.shift();
+};
+
+CharacterSpritesPool.prototype.returnSlideSprites = function(sprite)
+{
+	this.slideSprites.push(sprite);	
 };
