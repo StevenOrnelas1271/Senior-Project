@@ -37,20 +37,36 @@ Character.prototype.addFrameRate = function()
 	this.FRAMERATE -= .001;
 };
 
-Character.prototype.getSprite = function()
+Character.prototype.getSprite = function(characterSpriteType)
 {
+	var type;
+	var tempCharacter;
+	
+	switch (characterSpriteType)
+	{
+		case "Idle":
+			type = "Idle";
+			tempCharacter = this.pool.borrowIdleSprite();
+			break;
+		
+		case "Jump":
+			type = "Jump";
+			tempCharacter = this.pool.borrowJumpSprite();
+			break;
+			
+		case "Run":
+			type = "Run";
+			tempCharacter = this.pool.borrowRunSprite();
+			break;
+		
+		case "Slide":
+			type = "Slide";
+			tempCharacter = this.pool.borrowSlideSprite();
+			break;
+	}
+	
 	if (this.spriteReturned == false)
 	{
-		if (this.i >= this.pool.runSprites.length)
-		{
-			//console.log("i set to 0");
-			this.i = 0;
-		}
-		//Use a temp character so I can borrow and return that temp
-		tempCharacter = this.pool.borrowRunSprites();
-		//Increment this.i so we get the next sprite
-		this.i++;
-		
 		//set this.character to tempCharacter sprite and set the positioning
 		this.character = tempCharacter;
 		this.character.scale.x = 0.25;
@@ -59,8 +75,10 @@ Character.prototype.getSprite = function()
 		this.character.position.x = 205;
 		
 		//return the temp character to the pool
-		this.pool.returnRunSprites(tempCharacter);
+		this.pool.returnSprite(tempCharacter, type);
+		
 		this.frameTime = this.FRAMERATE;
+		
 		//return this.character to Main.js.update() for rendering
 		this.spriteReturned = true;
 		return this.character;		
@@ -69,62 +87,33 @@ Character.prototype.getSprite = function()
 	this.currTime = new Date().getTime();
 	this.delta = (this.currTime - this.lastTime) / 1000;
 	this.frameTime -= this.delta;
-	//console.log(this.frameTime - this.delta);
+	
 	if (this.frameTime <= 0)
 	{
-		//console.log("frameTime <= 0");
-		if (this.i >= this.pool.runSprites.length)
-		{
-			//console.log("i set to 0");
-			this.i = 0;
-		}
-		
-		//Use a temp character so I can borrow and return that temp
-		tempCharacter = this.pool.borrowRunSprites();
-		//Increment this.i so we get the next sprite
-		this.i++;
-		
 		//set this.character to tempCharacter sprite and set the positioning
 		this.character = tempCharacter;
 		this.character.scale.x = 0.25;
 		this.character.scale.y = 0.25;
 		this.character.position.y = 198;
 		this.character.position.x = 205;
+		//console.log(this.character);
 		
 		//return the temp character to the pool
-		this.pool.returnRunSprites(tempCharacter);
+		
 		this.frameTime = this.FRAMERATE;
 		this.lastTime = this.currTime;
+		
+		this.pool.returnSprite(tempCharacter, type);
 		//return this.character to Main.js.update() for rendering
 		return this.character;
 	}
 	
 	else
 	{
-		/*
-		if (this.i >= this.pool.runSprites.length)
-		{
-			//console.log("i set to 0");
-			this.i = 0;
-		}
-		//Use a temp character so I can borrow and return that temp
-		tempCharacter = this.pool.borrowRunSprites();
-		//Increment this.i so we get the next sprite
-		this.i++;
+		//console.log("else statement");
 		
-		//set this.character to tempCharacter sprite and set the positioning
-		this.character = tempCharacter;
-		this.character.scale.x = 0.25;
-		this.character.scale.y = 0.25;
-		this.character.position.y = 198;
-		this.character.position.x = 232;
-		
-		//return the temp character to the pool
-		this.pool.returnRunSprites(tempCharacter);
-		this.frameTime = this.FRAMERATE;
-		//return this.character to Main.js.update() for rendering
-		//this.spriteReturned = true;
-		*/
+		//return unused sprite
+		this.pool.returnSprite(tempCharacter, type);
 		return this.character;		
 	}
 };

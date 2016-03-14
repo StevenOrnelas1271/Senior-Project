@@ -21,14 +21,9 @@ CharacterSpritesPool.prototype.createDead = function()
 	}
 };
 
-CharacterSpritesPool.prototype.borrowDeadSprites = function()
+CharacterSpritesPool.prototype.borrowDeadSprite = function()
 {
 	return this.deadSprites.shift();
-};
-
-CharacterSpritesPool.prototype.returnDeadSprites = function(sprite)
-{
-	this.deadSprites.push(sprite);	
 };
 
 /*--------------------------------Idle Sprites--------------------------------*/
@@ -45,16 +40,10 @@ CharacterSpritesPool.prototype.createIdle = function()
 	}
 };
 
-CharacterSpritesPool.prototype.borrowIdleSprites = function()
+CharacterSpritesPool.prototype.borrowIdleSprite = function()
 {
 	return this.idleSprites.shift();
 };
-
-CharacterSpritesPool.prototype.returnIdleSprites = function(sprite)
-{
-	this.idleSprites.push(sprite);	
-};
-
 /*--------------------------------Jump Sprites--------------------------------*/
 CharacterSpritesPool.prototype.createJump = function()
 {
@@ -69,16 +58,10 @@ CharacterSpritesPool.prototype.createJump = function()
 	}
 };
 
-CharacterSpritesPool.prototype.borrowJumpSprites = function()
+CharacterSpritesPool.prototype.borrowJumpSprite = function()
 {
 	return this.jumpSprites.shift();
 };
-
-CharacterSpritesPool.prototype.returnJumpSprites = function(sprite)
-{
-	this.jumpSprites.push(sprite);	
-};
-
 /*------------------------------------Run Sprites--------------------------------*/
 CharacterSpritesPool.prototype.createRun = function()
 {
@@ -93,16 +76,10 @@ CharacterSpritesPool.prototype.createRun = function()
 	}
 };
 
-CharacterSpritesPool.prototype.borrowRunSprites = function()
+CharacterSpritesPool.prototype.borrowRunSprite = function()
 {
 	return this.runSprites.shift();
 };
-
-CharacterSpritesPool.prototype.returnRunSprites = function(sprite)
-{
-	this.runSprites.push(sprite);	
-};
-
 /*----------------------------------Slide Sprites--------------------------------*/
 CharacterSpritesPool.prototype.createSlide = function()
 {
@@ -117,12 +94,34 @@ CharacterSpritesPool.prototype.createSlide = function()
 	}
 };
 
-CharacterSpritesPool.prototype.borrowSlideSprites = function()
+CharacterSpritesPool.prototype.borrowSlideSprite = function()
 {
 	return this.slideSprites.shift();
 };
 
-CharacterSpritesPool.prototype.returnSlideSprites = function(sprite)
+/*---------------------------------Return Sprites-------------------------------*/
+CharacterSpritesPool.prototype.returnSprite = function(sprite, spriteType)
 {
-	this.slideSprites.push(sprite);	
+	switch (spriteType)
+	{
+		case "Dead":
+			this.deadSprites.push(sprite);	
+			break;
+			
+		case "Idle":
+			this.idleSprites.push(sprite);
+			break;
+			
+		case "Jump":
+			this.jumpSprites.push(sprite);
+			break;
+			
+		case "Run":
+			this.runSprites.push(sprite);
+			break;
+			
+		case "Slide":
+			this.slideSprites.push(sprite);
+			break;
+	}
 };

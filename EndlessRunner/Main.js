@@ -5,7 +5,7 @@ function Main()
 											);
 	this.loadSpriteSheet();
 	this.i = 0;
-	
+	this.characterSpriteType = "Idle"
 	
 	window.addEventListener('keydown', this.keyPressed.bind(this), false);
 }
@@ -23,18 +23,51 @@ Main.SCROLL_ACCELERATION = 0.005;
 
 Main.prototype.keyPressed = function (event)
 {
+	//if space bar is pressed
+	if (event.keyCode == 32)
+	{
+		this.characterSpriteType = "Jump";
+	}
+	
+	//Right arrow key pressed
+	if (event.keyCode == 39)
+	{
+		this.characterSpriteType = "Run";
+	}
+	
+	if (event.keyCode == 40)
+	{
+		this.characterSpriteType = "Slide";
+	}
+	
 	if (event.keyCode == 107)
 	{
-		console.log("+ pressed");
+		this.character.FRAMERATE -= .001;
+		console.log(this.character.FRAMERATE);
+	}
+	
+	if (event.keyCode == 109)
+	{
+		this.character.FRAMERATE += .001;
+		console.log(this.character.FRAMERATE);
 	}
 };
 
 Main.prototype.update = function()
 {
-	this.scroller.moveViewportXBy(Main.SCROLL_SPEED);
+	if (this.characterSpriteType == "Idle")
+	{
+		this.sprite = this.character.getSprite(this.characterSpriteType);
+		this.scroller.moveViewportXBy(0);
+	}
+	else
+	{
+		this.scroller.moveViewportXBy(Main.SCROLL_SPEED);
+		this.sprite = this.character.getSprite(this.characterSpriteType);
+	}
 	
 	//Get a new character sprite and add it to the stage to render
-	this.sprite = this.character.getSprite();
+	//this.sprite = this.character.getSprite();
 	this.stage.addChild(this.sprite);
 	this.renderer.render(this.stage);
 	//As soon as the sprite has been rendered remove it from the stage so it doesn't stick around
