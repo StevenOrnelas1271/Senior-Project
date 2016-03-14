@@ -11,6 +11,8 @@ function Walls()
 	this.viewportSliceX = 0;
 	
 	this.removedSlices = 0;
+	
+	this.i = 0;
 }
 
 Walls.constructor = Walls;
@@ -41,7 +43,7 @@ Walls.prototype.removeOldSlices = function(prevViewportSliceX)
 	
 	for (var i = prevViewportSliceX; i < prevViewportSliceX + numOldSlices; i++)
 	{
-		var slice = this.slices[i - this.removedSlices];
+		var slice = this.slices[i];
 		if (slice.sprite != null)
 		{
 			this.returnWallSprite(slice.type, slice.sprite);
@@ -66,7 +68,7 @@ Walls.prototype.addNewSlices = function()
 		//console.log("removedSlices: " + this.removedSlices + "i: " + i);
 		if (i - this.removedSlices < 0)
 			console.log("i: " + i + "removedslices: " + this.removedSlices);
-		var slice = this.slices[i - this.removedSlices];
+		var slice = this.slices[i];
 		//The slice does not have a sprite so link a sprite to this slice.
 		if (slice.sprite == null && slice.type != SliceType.GAP)
 		{
@@ -75,6 +77,7 @@ Walls.prototype.addNewSlices = function()
 			slice.sprite.position.x = firstX + (sliceIndex * WallSlice.WIDTH);
 			slice.sprite.position.y = slice.y;
 			
+			this.i++;
 			this.addChild(slice.sprite);
 		}
 		//The slice already has a sprite to it so just update the position of the sprite.
@@ -138,4 +141,17 @@ Walls.prototype.slicesAreLow = function()
 {
 	//console.log("slices.length: " + this.slices.length);
 	return this.slices.length < 100;
+};
+
+Walls.prototype.getWallYPosition = function()
+{
+	if (!this.slices[this.i])
+	{
+		this.i -= 1;
+	}
+	tempSlice = this.slices[this.i];
+	
+	//subtract 83 to get the top of the wall
+	return (tempSlice.y - 83);
+	//return this.slices.y[i];
 };

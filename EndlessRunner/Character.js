@@ -7,26 +7,11 @@ function Character ()
 	//Animation speed variables
 	this.i = 0;
 	this.lastTime = new Date().getTime();
-	this.FRAMERATE = .03;
+	this.FRAMERATE = .098;
 	this.frameTime = this.FRAMERATE;
 	this.spriteReturned = false;
-	
-	/*window.addEventListener('keydown', this.addFrameRate.bind(this), false);
-	
-	Main.addEventListener('keydown', function(event)
-	{
-		if (event.keyCode == 107)
-		{
-			console.log(characterEvent);
-			characterEvent.FRAMERATE += .01;
-			console.log("+ pressed");
-		}
-	});
-	*/
-	
-	
-	//Implement event listener
-	//this.addEventListener("onkeydown",this);
+	this.jumpYPositions = [198, 183, 168, 153, 138, 138, 153, 168, 183, 198];
+	this.jumpCounter = 0;
 }
 
 Character.constructor = Character;
@@ -37,7 +22,7 @@ Character.prototype.addFrameRate = function()
 	this.FRAMERATE -= .001;
 };
 
-Character.prototype.getSprite = function(characterSpriteType)
+Character.prototype.getSprite = function(characterSpriteType, yPosition)
 {
 	var type;
 	var tempCharacter;
@@ -47,16 +32,19 @@ Character.prototype.getSprite = function(characterSpriteType)
 		case "Idle":
 			type = "Idle";
 			tempCharacter = this.pool.borrowIdleSprite();
+			this.FRAMERATE = 0.65;
 			break;
 		
 		case "Jump":
 			type = "Jump";
 			tempCharacter = this.pool.borrowJumpSprite();
+			this.FRAMERATE = 0.25;
 			break;
 			
 		case "Run":
 			type = "Run";
-			tempCharacter = this.pool.borrowRunSprite();
+			tempCharacter = this.pool.borrowRunSprite();		
+			this.FRAMERATE = .098;
 			break;
 		
 		case "Slide":
@@ -71,9 +59,9 @@ Character.prototype.getSprite = function(characterSpriteType)
 		this.character = tempCharacter;
 		this.character.scale.x = 0.25;
 		this.character.scale.y = 0.25;
-		this.character.position.y = 198;
 		this.character.position.x = 205;
-		
+		this.character.position.y = yPosition;
+
 		//return the temp character to the pool
 		this.pool.returnSprite(tempCharacter, type);
 		
@@ -94,16 +82,40 @@ Character.prototype.getSprite = function(characterSpriteType)
 		this.character = tempCharacter;
 		this.character.scale.x = 0.25;
 		this.character.scale.y = 0.25;
-		this.character.position.y = 198;
 		this.character.position.x = 205;
-		//console.log(this.character);
 		
-		//return the temp character to the pool
+		if (type == "Slide")
+		{
+			//higher y pos = lower on the screen
+			//lower position that normal so character appears to be sliding on the ground
+			this.character.position.y = 225;
+		}
+		else if (type == "Jump")
+		{
+			if (this.jumpCounter > 9)
+			{
+				this.jumpCounter = 0;
+			}
+			
+			//go through the array of y positions that give the sprite the illusion of jumping
+			this.character.position.y = this.jumpYPositions[this.jumpCounter];
+			this.jumpCounter++;
+		}
+		else 
+		{
+			//default y position
+			this.character.position.y = yPosition;
+		}
 		
 		this.frameTime = this.FRAMERATE;
 		this.lastTime = this.currTime;
 		
+		//return the temp character to the pool
 		this.pool.returnSprite(tempCharacter, type);
+		if (this.jumpCounter > 9)
+		{
+			type = "Run";
+		}
 		//return this.character to Main.js.update() for rendering
 		return this.character;
 	}

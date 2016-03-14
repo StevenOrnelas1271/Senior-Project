@@ -6,6 +6,8 @@ function Main()
 	this.loadSpriteSheet();
 	this.i = 0;
 	this.characterSpriteType = "Idle"
+	this.jumpCounter = 0;
+	this.slideCounter = 0;
 	
 	window.addEventListener('keydown', this.keyPressed.bind(this), false);
 }
@@ -35,6 +37,7 @@ Main.prototype.keyPressed = function (event)
 		this.characterSpriteType = "Run";
 	}
 	
+	//Down arrow key pressed
 	if (event.keyCode == 40)
 	{
 		this.characterSpriteType = "Slide";
@@ -51,19 +54,54 @@ Main.prototype.keyPressed = function (event)
 		this.character.FRAMERATE += .001;
 		console.log(this.character.FRAMERATE);
 	}
+	
+	if (event.keyCode == 80)
+	{
+		this.characterSpriteType = "Idle";
+	}
 };
 
 Main.prototype.update = function()
 {
 	if (this.characterSpriteType == "Idle")
 	{
-		this.sprite = this.character.getSprite(this.characterSpriteType);
+		this.sprite = this.character.getSprite(this.characterSpriteType, 205);
 		this.scroller.moveViewportXBy(0);
 	}
 	else
 	{
+		this.characterYPosition = this.scroller.getWallYPosition();
 		this.scroller.moveViewportXBy(Main.SCROLL_SPEED);
-		this.sprite = this.character.getSprite(this.characterSpriteType);
+		
+		//hard coded for now, will be dynamic later
+		//this.sprite = this.character.getSprite(this.characterSpriteType, this.characterYPosition);
+		this.sprite = this.character.getSprite(this.characterSpriteType, 205);
+	
+		// if character is jumping and we actually got a new jump sprite increment sprite counter
+		if (this.characterSpriteType == "Jump" && this.oldSprite != this.sprite)
+		{
+			this.jumpCounter++;
+		}
+		// if counter exceeds number of jump sprites reset to 0 and set character to running
+		if (this.oldSprite != this.sprite && this.jumpCounter > 9)
+		{
+			this.characterSpriteType = "Run";
+			this.jumpCounter = 0;
+		}
+		
+		//same concept as jump but for sliding
+		if (this.characterSpriteType == "Slide" && this.oldSprite != this.sprite)
+		{
+			this.slideCounter++;
+		}
+		
+		if (this.oldSprite != this.sprite && this.slideCounter > 9)
+		{
+			this.characterSpriteType = "Run";
+			this.slideCounter = 0;
+		}
+		//used to compare if the sprite has changed since last update
+		this.oldSprite = this.sprite;
 	}
 	
 	//Get a new character sprite and add it to the stage to render
