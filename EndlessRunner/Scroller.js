@@ -37,3 +37,8 @@ Scroller.prototype.moveViewportXBy = function(units)
 	var newViewportX = this.viewportX + units;
 	this.setViewportX(newViewportX);
 };
+
+Scroller.prototype.getWallYPosition = function()
+{
+	return this.front.getWallYPosition();
+}

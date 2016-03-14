@@ -5,11 +5,11 @@ function MapBuilder(walls)
 }
 
 MapBuilder.WALL_HEIGHTS = [
-	256 + 32, //lowest slice
-	224 + 32,
-	192 + 32,
-	160 + 32,
-	128 + 32 //highest slice
+	288, //lowest slice
+	256,
+	224,
+	192,
+	160 //highest slice
 ];
 
 MapBuilder.prototype.createRandomWall = function()
