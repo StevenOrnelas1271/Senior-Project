@@ -124,7 +124,7 @@ Character.prototype.getSprite = function(characterSpriteType, yPosition)
 	{
 		//console.log("else statement");
 		
-		//return unused sprite
+		//return unchanged sprite
 		this.pool.returnSprite(tempCharacter, type);
 		return this.character;		
 	}

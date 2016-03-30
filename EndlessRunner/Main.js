@@ -43,6 +43,12 @@ Main.prototype.keyPressed = function (event)
 		this.characterSpriteType = "Slide";
 	}
 	
+	//P key pressed for pause
+	if (event.keyCode == 80)
+	{
+		this.characterSpriteType = "Idle";
+	}
+	
 	if (event.keyCode == 107)
 	{
 		this.character.FRAMERATE -= .001;
@@ -55,10 +61,6 @@ Main.prototype.keyPressed = function (event)
 		console.log(this.character.FRAMERATE);
 	}
 	
-	if (event.keyCode == 80)
-	{
-		this.characterSpriteType = "Idle";
-	}
 };
 
 Main.prototype.update = function()
@@ -70,7 +72,7 @@ Main.prototype.update = function()
 	}
 	else
 	{
-		this.characterYPosition = this.scroller.getWallYPosition();
+		//this.characterYPosition = this.scroller.getWallYPosition();
 		this.scroller.moveViewportXBy(Main.SCROLL_SPEED);
 		
 		//hard coded for now, will be dynamic later
@@ -83,7 +85,7 @@ Main.prototype.update = function()
 			this.jumpCounter++;
 		}
 		// if counter exceeds number of jump sprites reset to 0 and set character to running
-		if (this.oldSprite != this.sprite && this.jumpCounter > 9)
+		if (this.jumpCounter > 9)
 		{
 			this.characterSpriteType = "Run";
 			this.jumpCounter = 0;
@@ -95,7 +97,7 @@ Main.prototype.update = function()
 			this.slideCounter++;
 		}
 		
-		if (this.oldSprite != this.sprite && this.slideCounter > 9)
+		if (this.slideCounter > 9)
 		{
 			this.characterSpriteType = "Run";
 			this.slideCounter = 0;
@@ -105,7 +107,6 @@ Main.prototype.update = function()
 	}
 	
 	//Get a new character sprite and add it to the stage to render
-	//this.sprite = this.character.getSprite();
 	this.stage.addChild(this.sprite);
 	this.renderer.render(this.stage);
 	//As soon as the sprite has been rendered remove it from the stage so it doesn't stick around

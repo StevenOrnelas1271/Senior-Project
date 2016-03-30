@@ -43,7 +43,7 @@ Walls.prototype.removeOldSlices = function(prevViewportSliceX)
 	
 	for (var i = prevViewportSliceX; i < prevViewportSliceX + numOldSlices; i++)
 	{
-		var slice = this.slices[i];
+		var slice = this.slices[i - this.removedSlices];
 		if (slice.sprite != null)
 		{
 			this.returnWallSprite(slice.type, slice.sprite);
@@ -52,10 +52,13 @@ Walls.prototype.removeOldSlices = function(prevViewportSliceX)
 			//this.removedSlices++; // stops when length - removed = 30
 			//this.slices.shift();
 		}
-			//this.removedSlices++; // stop when length - removed = 20
-			//this.slices.shift();
+			this.removedSlices++; // stop when length - removed = 20
+			console.log("viewportSliceX: " + this.viewportSliceX + " removedSlices: " + this.removedSlices);
+			this.slices.shift();
 	}
 };
+
+// viewportSliceX keeps up with removedSlices
 
 Walls.prototype.addNewSlices = function()
 {
@@ -68,7 +71,7 @@ Walls.prototype.addNewSlices = function()
 		//console.log("removedSlices: " + this.removedSlices + "i: " + i);
 		if (i - this.removedSlices < 0)
 			console.log("i: " + i + "removedslices: " + this.removedSlices);
-		var slice = this.slices[i];
+		var slice = this.slices[i - this.removedSlices];
 		//The slice does not have a sprite so link a sprite to this slice.
 		if (slice.sprite == null && slice.type != SliceType.GAP)
 		{
