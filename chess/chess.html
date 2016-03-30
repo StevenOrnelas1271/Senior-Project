@@ -51,8 +51,8 @@
 		var firstMove;
 		
 		//setup chessboard
-		var container = new PIXI.Stage();	
-		stage.addChild(container);
+		//var container = new PIXI.Stage();	
+		//stage.addChild(container);
 		//generate grid image and position
 		var gridsize = 36;
 		/*
@@ -78,7 +78,7 @@
 		// button layer over the chessboard
 		var buttons = [];
 		var noop = function (){
-			console.log('click');
+			//console.log('click');
 		};
 
 		// create a 10 x 12 grid of interactive squares
@@ -353,31 +353,28 @@
 			if (currentPiece == 0){
 				pieceMoved = false;
 				currentPiece = this.status;
-				log(this.status);
+				//log(this.status);
 				this.tint=0xf000f0;
-				log("rowNum = ");
-				log(this.rowNum);
-				log("colNum = ");
-				log(this.colNum);
+				log("rowNum = " + this.rowNum);
+				log("colNum = " + this.colNum);
 				
 				if (this.status > 0 && this.status < numPieces+1){
 					pieceType = pieces;
 					pieceType[currentPiece-1].tint = 0x00f0f0;
-				}
+				} 
 
-				log('Piece Selected:');
-				log(currentPiece);
+				log("Piece Selected:" + currentPiece);
 				currentPosition = this.gridNum;
-				log('grid selected');
-				log(currentPosition);
+				log("grid selected: " + currentPosition);
+				
 				if (currentPiece < 0){
 					currentPiece = 0;
 				}
 				
 				if (currentPiece > 0){
-					log('currentPiece type:');
+					log("currentPiece type: " + pieceType[currentPiece-1].type);
 					//log(pieceType[currentPiece-1].gridNum);
-					log(pieceType[currentPiece-1].type);
+					//log(currentPiece);
 					return;
 				}
 			}
@@ -388,10 +385,8 @@
 			//If player has a piece chosen
 			if (currentPiece > 0){
 			
-				log('current piece original location:');
-				log(currentPosition);
-				log('new grid');
-				log(this.gridNum);
+				log("current piece original location: " + currentPosition);
+				log("new position: " + this.gridNum);
 
 				//PAWNS
 				//white pawn movement rules
@@ -422,12 +417,18 @@
 						
 						//capture diagonal left
 						if (this.status > 0 && ((currentPosition) - (12+1)) == this.gridNum){
+						
+							//use this.status to get the index of the piece that is occupying the square we capture
+							deletePiece(this.status);
+
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
 						}
 						//capture diagonal right
 						if (this.status > 0 && ((currentPosition) + (12-1)) == this.gridNum){
+							deletePiece(this.status);
+							
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
@@ -516,11 +517,18 @@
 			}
 		}
 		
+		//Remove child function
+		
+		function deletePiece(index) {
+			stage.removeChild(pieces[index - 1]);
+		}
 		//print error messages for debugging
 		function log(msg) {
-			setTimeout(function() {
+			/*setTimeout(function() {
 				throw new Error(msg);
 			}, 0);
+			*/
+			console.log(msg);
 		}
 		
 		</script>
