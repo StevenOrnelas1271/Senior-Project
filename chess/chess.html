@@ -336,6 +336,8 @@
 				if (buttons[i].status == 0){
 					buttons.tint = defaultColor;
 				}
+				
+				
 				for (var j = 0; j < numPieces; j++)
 				if (buttons[i].status == j+1) {
 					pieces[j].position.x = buttons[i].position.x;
@@ -343,6 +345,10 @@
 					pieces[j].gridNum = buttons[i].gridnum;
 					pieces[j].rowNum = buttons[i].rowNum;
 					pieces[j].colNum = buttons[i].colNum;
+					
+					//record color of piece currently on the grid
+					buttons[i].pieceColor = pieces[j].pieceColor;
+					
 				}
 			}
 		}
@@ -458,11 +464,13 @@
 							}
 						}
 						if (this.status > 0 && ((currentPosition) - (12-1)) == this.gridNum){
+							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
 						}
 						if (this.status > 0 && ((currentPosition) + (12+1)) == this.gridNum){
+							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
@@ -472,9 +480,10 @@
 				
 				//ROOKS
 				if (pieceType[currentPiece-1].type == 'rook'){
-					if (this.status == 0){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
 						// Legal moves: same column or same row
 						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){
+							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
@@ -484,7 +493,7 @@
 				
 				//KNIGHT
 				if (pieceType[currentPiece-1].type == 'knight'){
-					if (this.status == 0){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
 						if ((	this.rowNum == pieceType[currentPiece-1].rowNum -2 && this.colNum == pieceType[currentPiece-1].colNum -1)
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum -2)
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum -2)
@@ -494,9 +503,28 @@
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum +2)
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum +2 && this.colNum == pieceType[currentPiece-1].colNum +1)){
 							
+							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
+						}
+					}
+				}
+				
+				//BISHOP
+				if (pieceType[currentPiece-1].type == 'bishop'){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
+						for (var i = 1; i < 8; i++){
+							if ((	this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum +i) //permit move diagonal bottom right
+								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum +i) //permit move diagonal top right
+								|| (this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal bottom left
+								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal top left
+							){
+							deletePiece(this.status);
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+							}
 						}
 					}
 				}
@@ -511,7 +539,7 @@
 				
 				currentPiece = 0;
 				
-				//alternante player turns
+				//alternate player turns
 				if (playerTurn == 0){playerTurn = 1;}
 				if (playerTurn == 1){playerTurn = 0;}
 			}
