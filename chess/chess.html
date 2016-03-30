@@ -464,11 +464,13 @@
 							}
 						}
 						if (this.status > 0 && ((currentPosition) - (12-1)) == this.gridNum){
+							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
 						}
 						if (this.status > 0 && ((currentPosition) + (12+1)) == this.gridNum){
+							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
@@ -481,6 +483,7 @@
 					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
 						// Legal moves: same column or same row
 						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){
+							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
@@ -500,6 +503,7 @@
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum +2)
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum +2 && this.colNum == pieceType[currentPiece-1].colNum +1)){
 							
+							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
@@ -507,6 +511,7 @@
 					}
 				}
 				
+				//BISHOP
 				if (pieceType[currentPiece-1].type == 'bishop'){
 					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
 						for (var i = 1; i < 8; i++){
@@ -515,7 +520,7 @@
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal bottom left
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal top left
 							){
-							
+							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
