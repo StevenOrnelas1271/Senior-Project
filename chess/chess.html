@@ -50,33 +50,12 @@
 		
 		var firstMove;
 		
-		//setup chessboard
-		//var container = new PIXI.Stage();	
-		//stage.addChild(container);
 		//generate grid image and position
 		var gridsize = 36;
-		/*
-		for (var j = 0; j < 12; j++){
-			for (var i = 0; i < 10; i++){
-				if ((i >= 1 && i <= 8) && (j >= 2 && j <= 9)){
-					if ((i%2 == 0 && j%2 != 0) || i%2 != 0 && j%2 ==0){
-						var grid = PIXI.Sprite.fromImage("assets/black_grid.png");
-					}
-					else{
-						var grid = PIXI.Sprite.fromImage("assets/white_grid.png");
-					}
-				}
-				else{
-				var grid = PIXI.Sprite.fromImage("assets/grass_grid.png");
-				}
-			grid.x = gridsize * i;
-			grid.y = gridsize * j;
-			container.addChild(grid);
-			}
-		}
-		*/
+
 		// button layer over the chessboard
 		var buttons = [];
+		
 		var noop = function (){
 			//console.log('click');
 		};
@@ -288,40 +267,6 @@
 		//black queen
 		buttons[62].status = 32;
 		
-		/*
-		var queenTexture = PIXI.Texture.fromImage("assets/queen-test.png");
-		var queens = [];
-		for (var i = 0; i < 1; i++){
-			var queen = new PIXI.Sprite(queenTexture);
-			
-			queen.anchor.x = 0.5;
-			queen.anchor.y = 0.5;
-			
-			queen.position.x = buttons[57].position.x;
-			queen.position.y = buttons[57].position.y;
-			
-			stage.addChild(queen);
-			queens.push(queen);
-			queens[i].tint = 0x000000;
-		}
-		
-		var kingTexture = PIXI.Texture.fromImage("assets/king-test.png");
-		var kings = [];
-		for (var i = 0; i < 1; i++){
-			var king = new PIXI.Sprite(kingTexture);
-			
-			king.anchor.x = 0.5;
-			king.anchor.y = 0.5;
-			
-			king.position.x = buttons[69].position.x;
-			king.position.y = buttons[69].position.y;
-			
-			stage.addChild(king);
-			kings.push(king);
-			kings[i].tint = 0x000000;
-		}
-*/
-		
 		//render the scene
 		animate();
 		
@@ -348,7 +293,7 @@
 					
 					//record color of piece currently on the grid
 					buttons[i].pieceColor = pieces[j].pieceColor;
-					
+					//log("Buttons colors: " + buttons[i].pieceColor);
 				}
 			}
 		}
@@ -371,8 +316,8 @@
 
 				log("Piece Selected:" + currentPiece);
 				currentPosition = this.gridNum;
-				log("grid selected: " + currentPosition);
-				
+				log("Current position selected: " + currentPosition);
+				log("current position status: " + buttons[currentPosition].status);
 				if (currentPiece < 0){
 					currentPiece = 0;
 				}
@@ -482,8 +427,15 @@
 				if (pieceType[currentPiece-1].type == 'rook'){
 					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
 						// Legal moves: same column or same row
-						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){
+						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){						
+							
+							if (!validMove(pieceType[currentPiece-1].rowNum, pieceType[currentPiece-1].colNum, this.rowNum, this.colNum, pieceType[currentPiece-1].pieceColor, this.pieceColor))
+							{
+								log("Invalid rook move!");
+								return;
+							}
 							deletePiece(this.status);
+
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
@@ -504,12 +456,14 @@
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum +2 && this.colNum == pieceType[currentPiece-1].colNum +1)){
 							
 							deletePiece(this.status);
+							
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
 						}
 					}
 				}
+				
 				
 				//BISHOP
 				if (pieceType[currentPiece-1].type == 'bishop'){
@@ -520,11 +474,56 @@
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal bottom left
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal top left
 							){
+								deletePiece(this.status);
+								this.status = currentPiece;
+								buttons[currentPosition].status = 0;
+								pieceType[currentPiece-1].firstMove = false;
+							}
+						}
+					}
+				}
+				
+				//QUEEN
+				if (pieceType[currentPiece-1].type == 'queen'){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
+						for (var i = 1; i < 8; i++){
+							if ((	this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum +i) //permit move diagonal bottom right
+								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum +i) //permit move diagonal top right
+								|| (this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal bottom left
+								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal top left
+							){
+								deletePiece(this.status);
+								this.status = currentPiece;
+								buttons[currentPosition].status = 0;
+								pieceType[currentPiece-1].firstMove = false;
+							}
+						}
+						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){
 							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
-							}
+						}
+					}
+				}
+				
+				//KING
+				if (pieceType[currentPiece-1].type == 'king'){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
+						if ((	this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum +1) //permit move diagonal bottom right
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum +1) //permit move diagonal top right
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum -1) //permit move diagonal bottom left
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum -1) //permit move diagonal top left
+							
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum +0) //permit move up
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum +0 && this.colNum == pieceType[currentPiece-1].colNum +1) //permit move right
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum +0) //permit move down
+							|| (this.rowNum == pieceType[currentPiece-1].rowNum +0 && this.colNum == pieceType[currentPiece-1].colNum -1) //permit move right
+						){
+							deletePiece(this.status);
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
 						}
 					}
 				}
@@ -537,11 +536,21 @@
 					pieceType[currentPiece-1].tint = 0x000000;
 				}
 				
-				currentPiece = 0;
-				
 				//alternate player turns
-				if (playerTurn == 0){playerTurn = 1;}
-				if (playerTurn == 1){playerTurn = 0;}
+				if (playerTurn == white){
+					playerTurn = black;
+					currentPiece = 0;
+					return;
+				}
+				if (playerTurn == black){
+					playerTurn = white;
+					currentPiece = 0;
+					return;
+				}
+				
+				//currentPiece = 0;
+				
+
 			}
 		}
 		
@@ -550,12 +559,70 @@
 		function deletePiece(index) {
 			stage.removeChild(pieces[index - 1]);
 		}
+		
+		function validMove(pieceRow, pieceCol, captureRow, captureCol, pieceColor, captureColor)
+		{
+			console.log("checkBlocks piece position: " + pieceRow + ", " + pieceCol);
+			log("checkBlocks capture position: " + captureRow + ", " + captureCol);
+			
+			//buttonPosition = (pieceCol * 12) + pieceRow;
+			//if the row has changed we are moving up and down
+			
+			if (pieceRow - captureRow != 0)
+			{
+				log("Moving rook up and down!");
+				var startRow;
+				var endRow;
+				var movement;
+				var buttonPosition;
+				
+				//decide which row to start scanning from 
+				//if we are moving down 
+				if ((pieceRow - captureRow) > 0)
+				{
+					startRow = captureRow;
+					endRow = pieceRow;
+					movemment = "up";
+					log("Moving up!");
+				} else {
+					startRow = pieceRow;
+					endRow = captureRow;
+					movement = "down";
+					log("Moving down!");
+				}
+				
+				log("starting row: " + startRow);
+				log("ending row: " + endRow);
+				//check up or down
+				//scan only the squares in between the pieces, not the squares the pieces occupy
+				for (var i = startRow; i < endRow - 1; i++)
+				{
+					//calculate starting button position to check
+					if (movement == "down")
+					{
+						buttonPosition = (pieceCol * 12) + i + 1;
+					}
+					else
+						buttonPosition = (pieceCol * 12) + i;
+					log("Button positions: " + buttonPosition);
+					
+					if (buttons[buttonPosition].status != 0)
+					{
+						log("position occupied");
+						return false;
+					}
+				}
+				return true;
+			}
+			
+			else 
+			{
+				//check left or right
+			}
+		}
+		
 		//print error messages for debugging
 		function log(msg) {
-			/*setTimeout(function() {
-				throw new Error(msg);
-			}, 0);
-			*/
 			console.log(msg);
 		}
 		
