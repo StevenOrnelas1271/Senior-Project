@@ -445,7 +445,7 @@
 				
 				//KNIGHT
 				if (pieceType[currentPiece-1].type == 'knight'){
-					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor  && this.status != -1){
 						if ((	this.rowNum == pieceType[currentPiece-1].rowNum -2 && this.colNum == pieceType[currentPiece-1].colNum -1)
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum -2)
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum -2)
@@ -467,7 +467,7 @@
 				
 				//BISHOP
 				if (pieceType[currentPiece-1].type == 'bishop'){
-					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor  && this.status != -1){
 						for (var i = 1; i < 8; i++){
 							if ((	this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum +i) //permit move diagonal bottom right
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum +i) //permit move diagonal top right
@@ -485,7 +485,7 @@
 				
 				//QUEEN
 				if (pieceType[currentPiece-1].type == 'queen'){
-					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor  && this.status != -1){
 						for (var i = 1; i < 8; i++){
 							if ((	this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum +i) //permit move diagonal bottom right
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum +i) //permit move diagonal top right
@@ -509,7 +509,7 @@
 				
 				//KING
 				if (pieceType[currentPiece-1].type == 'king'){
-					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor  && this.status != -1){
 						if ((	this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum +1) //permit move diagonal bottom right
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum +1) //permit move diagonal top right
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum -1) //permit move diagonal bottom left
@@ -566,18 +566,17 @@
 			log("checkBlocks capture position: " + captureRow + ", " + captureCol);
 			
 			//buttonPosition = (pieceCol * 12) + pieceRow;
-			//if the row has changed we are moving up and down
 			
+			//if the row has changed the rook is moving vertically
 			if (pieceRow - captureRow != 0)
 			{
-				log("Moving rook up and down!");
 				var startRow;
 				var endRow;
 				var movement;
 				var buttonPosition;
 				
 				//decide which row to start scanning from 
-				//if we are moving down 
+				//if we are moving up
 				if ((pieceRow - captureRow) > 0)
 				{
 					startRow = captureRow;
@@ -598,12 +597,7 @@
 				for (var i = startRow; i < endRow - 1; i++)
 				{
 					//calculate starting button position to check
-					if (movement == "down")
-					{
-						buttonPosition = (pieceCol * 12) + i + 1;
-					}
-					else
-						buttonPosition = (pieceCol * 12) + i;
+					buttonPosition = (pieceCol * 12) + i + 1;
 					log("Button positions: " + buttonPosition);
 					
 					if (buttons[buttonPosition].status != 0)
@@ -615,9 +609,40 @@
 				return true;
 			}
 			
+			//Or if the column has changed the rook is moving horizontally
 			else 
 			{
+				//if we are moving right 
+				if ((pieceCol - captureCol) > 0)
+				{
+					startCol = captureCol;
+					endCol = pieceCol;
+					movemment = "right";
+					log("Moving left!");
+					log("starting col: " + startCol);
+				} else {
+					startCol = pieceCol;
+					endCol = captureCol;
+					movement = "down";
+					log("Moving right!");
+					log("ending col: " + endCol);
+				}
+				
 				//check left or right
+				for (var i = startCol + 1; i < endCol; i++)
+				{
+					//calculate starting button position to check
+					buttonPosition = (i * 12) + pieceRow;
+					log("Button positions: " + buttonPosition);
+					
+					if (buttons[buttonPosition].status != 0)
+					{
+						log("position occupied");
+						return false;
+					}
+				}
+				
+				return true;
 			}
 		}
 		
