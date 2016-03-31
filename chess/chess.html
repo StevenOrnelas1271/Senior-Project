@@ -1,4 +1,4 @@
-*/<!DOCTYPE HTML>
+<!DOCTYPE HTML>
 <html>
 	<head>
 		<meta charset="UTF-8">
@@ -427,8 +427,7 @@
 				if (pieceType[currentPiece-1].type == 'rook'){
 					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
 						// Legal moves: same column or same row
-						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){
-							
+						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){						
 							
 							if (!validMove(pieceType[currentPiece-1].rowNum, pieceType[currentPiece-1].colNum, this.rowNum, this.colNum, pieceType[currentPiece-1].pieceColor, this.pieceColor))
 							{
@@ -436,7 +435,6 @@
 								return;
 							}
 							deletePiece(this.status);
-							
 
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
@@ -458,12 +456,14 @@
 							|| (this.rowNum == pieceType[currentPiece-1].rowNum +2 && this.colNum == pieceType[currentPiece-1].colNum +1)){
 							
 							deletePiece(this.status);
+							
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
 							pieceType[currentPiece-1].firstMove = false;
 						}
 					}
 				}
+				
 				
 				//BISHOP
 				if (pieceType[currentPiece-1].type == 'bishop'){
@@ -474,13 +474,10 @@
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal bottom left
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal top left
 							){
-							deletePiece(this.status);
-
-							
-							this.status = currentPiece;
-							log("Bishop currentPosition: " + currentPosition);
-							buttons[currentPosition].status = 0;
-							pieceType[currentPiece-1].firstMove = false;
+								deletePiece(this.status);
+								this.status = currentPiece;
+								buttons[currentPosition].status = 0;
+								pieceType[currentPiece-1].firstMove = false;
 							}
 						}
 					}
@@ -530,7 +527,6 @@
 						}
 					}
 				}
-
 				
 				//After finishing the move, player no longer has a piece selected
 				if (pieceType[currentPiece-1].pieceColor == white){
@@ -540,11 +536,21 @@
 					pieceType[currentPiece-1].tint = 0x000000;
 				}
 				
-				currentPiece = 0;
-				
 				//alternate player turns
-				if (playerTurn == 0){playerTurn = 1;}
-				if (playerTurn == 1){playerTurn = 0;}
+				if (playerTurn == white){
+					playerTurn = black;
+					currentPiece = 0;
+					return;
+				}
+				if (playerTurn == black){
+					playerTurn = white;
+					currentPiece = 0;
+					return;
+				}
+				
+				//currentPiece = 0;
+				
+
 			}
 		}
 		
