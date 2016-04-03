@@ -151,10 +151,10 @@
 				var piece = new PIXI.Sprite(bishopTexture);
 			}
 			if (i == 28 || i == 29){
-				var piece = new PIXI.Sprite(kingTexture);
+				var piece = new PIXI.Sprite(queenTexture);
 			}
 			if (i >= 30 && i < numPieces){
-				var piece = new PIXI.Sprite(queenTexture);
+				var piece = new PIXI.Sprite(kingTexture);
 			}
 			
 			piece.anchor.x = 0.5;
@@ -206,22 +206,22 @@
 			if (i == 28){
 				pieces[i].tint = 0xffffff;
 				pieces[i].pieceColor = white;
-				pieces[i].type = 'king';
+				pieces[i].type = 'queen';
 			}
 			if (i == 29){
 				pieces[i].tint = 0x000000;
 				pieces[i].pieceColor = black;
-				pieces[i].type = 'king';
+				pieces[i].type = 'queen';
 			}
 			if (i == 30){
 				pieces[i].tint = 0xffffff;
 				pieces[i].pieceColor = white;
-				pieces[i].type = 'queen';
+				pieces[i].type = 'king';
 			}
 			if (i == 31){
 				pieces[i].tint = 0x000000;
 				pieces[i].pieceColor = black;
-				pieces[i].type = 'queen';
+				pieces[i].type = 'king';
 			}
 			pieces[i].firstMove = true;
 		}
@@ -306,8 +306,8 @@
 				currentPiece = this.status;
 				//log(this.status);
 				this.tint=0xf000f0;
-				log("rowNum = " + this.rowNum);
-				log("colNum = " + this.colNum);
+				log("colNum = " + this.colNum + " rowNum = " + this.rowNum);
+				//log("rowNum = " + this.rowNum);
 				
 				if (this.status > 0 && this.status < numPieces+1){
 					pieceType = pieces;
@@ -425,11 +425,11 @@
 				
 				//ROOKS
 				if (pieceType[currentPiece-1].type == 'rook'){
-					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor){
+					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor && this.status != -1){
 						// Legal moves: same column or same row
 						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){						
 							
-							if (!validMove(pieceType[currentPiece-1].rowNum, pieceType[currentPiece-1].colNum, this.rowNum, this.colNum, pieceType[currentPiece-1].pieceColor, this.pieceColor))
+							if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
 							{
 								log("Invalid rook move!");
 								return;
@@ -474,6 +474,11 @@
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal bottom left
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal top left
 							){
+								if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
+								{
+									log("Invalid bishop move!");
+									return;
+								}
 								deletePiece(this.status);
 								this.status = currentPiece;
 								buttons[currentPosition].status = 0;
@@ -492,6 +497,11 @@
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal bottom left
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal top left
 							){
+								if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
+								{
+									log("Invalid queen move!");
+									return;
+								}
 								deletePiece(this.status);
 								this.status = currentPiece;
 								buttons[currentPosition].status = 0;
@@ -499,6 +509,11 @@
 							}
 						}
 						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){
+							if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
+							{
+								log("Invalid queen move!");
+								return;
+							}
 							deletePiece(this.status);
 							this.status = currentPiece;
 							buttons[currentPosition].status = 0;
@@ -560,92 +575,197 @@
 			stage.removeChild(pieces[index - 1]);
 		}
 		
-		function validMove(pieceRow, pieceCol, captureRow, captureCol, pieceColor, captureColor)
-		{
-			console.log("checkBlocks piece position: " + pieceRow + ", " + pieceCol);
-			log("checkBlocks capture position: " + captureRow + ", " + captureCol);
-			
-			//buttonPosition = (pieceCol * 12) + pieceRow;
-			
-			//if the row has changed the rook is moving vertically
-			if (pieceRow - captureRow != 0)
-			{
-				var startRow;
-				var endRow;
-				var movement;
-				var buttonPosition;
-				
-				//decide which row to start scanning from 
-				//if we are moving up
-				if ((pieceRow - captureRow) > 0)
-				{
-					startRow = captureRow;
-					endRow = pieceRow;
-					movemment = "up";
-					log("Moving up!");
-				} else {
-					startRow = pieceRow;
-					endRow = captureRow;
-					movement = "down";
-					log("Moving down!");
-				}
-				
-				log("starting row: " + startRow);
-				log("ending row: " + endRow);
-				//check up or down
-				//scan only the squares in between the pieces, not the squares the pieces occupy
-				for (var i = startRow; i < endRow - 1; i++)
-				{
-					//calculate starting button position to check
-					buttonPosition = (pieceCol * 12) + i + 1;
-					log("Button positions: " + buttonPosition);
-					
-					if (buttons[buttonPosition].status != 0)
+		function validMove(piece, capture, pieceType)
+		{			
+			switch (pieceType){
+				case "rook":
+					//If it's not the same row then the piece is moving vertically
+					if (pieceRow - captureRow != 0)
 					{
-						log("position occupied");
-						return false;
+						if (checkVertical(piece, capture))
+							return true;
+						else
+							return false;						
+					} else {
+						if (checkHorizontal(piece, capture))
+							return true;
+						else 
+							return false;
 					}
-				}
-				return true;
-			}
-			
-			//Or if the column has changed the rook is moving horizontally
-			else 
-			{
-				//if we are moving right 
-				if ((pieceCol - captureCol) > 0)
-				{
-					startCol = captureCol;
-					endCol = pieceCol;
-					movemment = "right";
-					log("Moving left!");
-					log("starting col: " + startCol);
-				} else {
-					startCol = pieceCol;
-					endCol = captureCol;
-					movement = "down";
-					log("Moving right!");
-					log("ending col: " + endCol);
-				}
-				
-				//check left or right
-				for (var i = startCol + 1; i < endCol; i++)
-				{
-					//calculate starting button position to check
-					buttonPosition = (i * 12) + pieceRow;
-					log("Button positions: " + buttonPosition);
+
+					break;
+
+				case "bishop":
+					if (checkDiagonal(piece, capture))
+						return true;
+					else
+						return false;
+					break;
 					
-					if (buttons[buttonPosition].status != 0)
+				case "queen":
+					
+					//check horizontal squares if the queen is moving horizontally
+					if (pieceRow - captureRow == 0)
 					{
-						log("position occupied");
-						return false;
+						log("queen horizontal");
+						if (checkHorizontal(piece, capture))
+							return true;
+						else
+							return false;	
 					}
-				}
-				
-				return true;
+					
+					//check vertical squares if the queen is moving vertically
+					else if (pieceCol - captureCol == 0)
+					{
+						log("queen vertical");
+						if (checkVertical(piece, capture))
+							return true;
+						else 
+							return false;				
+					}
+					
+					//check diagonal squares if the queen is moving diagonally
+					else
+					{
+						log("diagonal movement");
+						if (checkDiagonal(piece, capture))
+							return true;
+						else
+							return false;
+					}
+					
+					return true;
+					break;
 			}
 		}
 		
+		
+		function checkHorizontal (piece, capture)
+		{
+			var pieceCol = piece.colNum;
+			var pieceRow = piece.rowNum;			
+			var captureCol = capture.colNum;
+			var startCol;
+			var endCol;
+			var buttonPosition;
+			
+			if ((pieceCol - captureCol) > 0)
+			{
+				startCol = captureCol;
+				endCol = pieceCol;
+			} else {
+				startCol = pieceCol;
+				endCol = captureCol;
+			}
+			
+			for (var i = startCol + 1; i < endCol; i++)
+			{
+				//calculate starting button position to check
+				buttonPosition = (i * 12) + pieceRow;
+				log("Button positions: " + buttonPosition);
+				
+				if (buttons[buttonPosition].status != 0)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		function checkVertical (piece, capture)
+		{
+			var pieceRow = piece.rowNum;
+			var pieceCol = piece.colNum;
+			var captureRow = capture.rowNum;
+			var startRow;
+			var endRow;
+			var buttonPosition;
+			
+			if ((pieceRow - captureRow) > 0)
+			{
+				startRow = captureRow;
+				endRow = pieceRow;
+			} else {
+				startRow = pieceRow;
+				endRow = captureRow;
+			}
+	
+			//scan only the squares in between the pieces, not the squares the pieces occupy
+			for (var i = startRow; i < endRow - 1; i++)
+			{
+				//calculate starting button position to check
+				buttonPosition = (pieceCol * 12) + i + 1;
+				
+				if (buttons[buttonPosition].status != 0)
+				{
+					log("position occupied");
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		function checkDiagonal (piece, capture)
+		{
+			var pieceRow = piece.rowNum;
+			var pieceCol = piece.colNum;
+			var captureRow = capture.rowNum;
+			var captureCol = capture.colNum;
+			var startRow;
+			var endRow;
+			var startCol;
+			var endCol;
+			var buttonPosition;
+			var horizontalMovement;
+			var verticalMovement;
+			//the bishop is capturing a square to the left
+			if (pieceCol - captureCol > 0)
+			{					
+				horizontalMovement = "left";
+				startCol = captureCol;
+				endCol = pieceCol;						
+				startRow = captureRow;
+			} else {
+				//the bishop is capturing a square to the right
+				horizontalMovement = "right";
+				startCol = pieceCol;
+				endCol = captureCol;
+				startRow = pieceRow;
+			}
+		
+			//the bishop is capturing a square upwards
+		
+			if (pieceRow - captureRow > 0)
+			{
+				verticalMovement = "up";
+			} else {
+				verticalMovement = "down";
+			}
+			
+			//begin j at the starting row for scanning
+			var j = startRow;
+			for (var i = startCol + 1; i < endCol; i++)
+			{	
+				//because j represents the row currently being checked and the scanner works by going left to right, top to bottom,
+				//j needs to decremented to check the square 1 up
+				if ((horizontalMovement == "left" && verticalMovement == "down") ||
+					(horizontalMovement == "right" && verticalMovement == "up"))
+					j--;
+				//in all other cases the scanner will look 1 square right and 1 square down
+				//so j needs to be incremented instead of decremented
+				else
+					j++;
+			
+				buttonPosition = (i*12) + j;
+				log (buttonPosition);						
+				if (buttons[buttonPosition].status != 0)
+				{
+					log("Position occupied (bishop check)");
+					return false;
+				}
+			}
+			return true;
+		}
 		//print error messages for debugging
 		function log(msg) {
 			console.log(msg);
