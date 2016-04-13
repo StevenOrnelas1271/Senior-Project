@@ -563,8 +563,54 @@
 							pieceType[currentPiece-1].firstMove = false;
 						}
 					}
+					
+					//Castling
+					if (this.status == 0){
+						//Castling white king right
+						if (this.rowNum == pieceType[wr2-1].rowNum +0 && this.colNum == pieceType[currentPiece-1].colNum +2
+							&& pieceType[currentPiece-1].firstMove == true && pieceType[wr2-1].firstMove == true){
+							if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
+							{
+								log("Invalid queen move!");
+								pieceType[currentPiece-1].tint = defaultColor;
+								currentPiece = 0;
+								pieceMoved = false;
+								return;
+							}
+							//update white rook 2 position
+							buttons[currentPosition+(3*12)].status = 0;
+							buttons[currentPosition+12].status = wr2;
+							pieceType[wr2-1].firstMove = false;
+							
+							pieceMoved = true;
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+						//Castling white king left
+						if (this.rowNum == pieceType[wr1-1].rowNum +0 && this.colNum == pieceType[currentPiece-1].colNum -2
+							&& pieceType[currentPiece-1].firstMove == true && pieceType[wr1-1].firstMove == true){
+							if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
+							{
+								log("Invalid queen move!");
+								pieceType[currentPiece-1].tint = defaultColor;
+								currentPiece = 0;
+								pieceMoved = false;
+								return;
+							}
+							//update white rook 1 position
+							buttons[currentPosition-(4*12)].status = 0;
+							buttons[currentPosition-(12)].status = wr1;
+							pieceType[wr1-1].firstMove = false;
+							
+							pieceMoved = true;
+							this.status = currentPiece;
+							buttons[currentPosition].status = 0;
+							pieceType[currentPiece-1].firstMove = false;
+						}
+					}
 				}
-				
+	
 				//After finishing the move, player no longer has a piece selected
 				pieceType[currentPiece-1].tint = defaultColor;
 				
@@ -658,6 +704,19 @@
 					else
 					{
 						if (checkDiagonal(piece, capture))
+							moveValid = true;
+						else
+							moveValid = false;
+					}
+					
+					return moveValid;
+					break;
+					
+				case "king":
+					//check horizontal squares when castling
+					if (pieceRow - captureRow === 0)
+					{
+						if (checkHorizontal(piece, capture))
 							moveValid = true;
 						else
 							moveValid = false;
