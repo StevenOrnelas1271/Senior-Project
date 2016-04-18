@@ -625,6 +625,22 @@ function keyPressed (event)
 		(debugMode == true) ? debugMode = false : debugMode = true;
 		(debugMode == true) ? log("Debugging enabled, turns are disabled.") : log("Debugging disabled"); 
 	}
+	
+	if (event.keyCoded == 81)
+	{
+		pieces[currentPiece-1].type = "queen";
+		deletePiece(pieces[currentPiece-1].status-1);
+		this.status = currentPiece;
+		
+		pieces[currentPiece-1] = new PIXI.Sprite(wQueenTexture);
+		pieces[currentPiece-1].type = 'queen';
+		pieces[currentPiece-1].anchor.x = 0.5;
+		pieces[currentPiece-1].anchor.y = 0.5;
+		pieces[currentPiece-1].pieceColor = white;
+		
+		stage.addChild(pieceType[currentPiece-1]);
+		pieces.push(pieceType[currentPiece-1]);
+	}
 }
 		
 function updatePosition (buttonSelected)
@@ -637,4 +653,5 @@ function updatePosition (buttonSelected)
 	buttons[currentPosition].type = 'none';
 	buttons[currentPosition].pieceColor = 2;
 	pieces[currentPiece-1].firstMove = false;
+	moveCount += 1;
 }
