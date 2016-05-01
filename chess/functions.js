@@ -11,9 +11,27 @@ function validMove(piece, capture, pieceType)
 	var captureCol = capture.colNum;
 	var captureRow = capture.rowNum;
 	var pieceColor = buttons[pieceCol * 12 + pieceRow].pieceColor;
+	var oldColor = buttons[captureCol * 12 + captureRow].pieceColor;
 	var moveValid = true;
 			
 	switch (pieceType){
+		
+		case "pawn":
+			//Check if the pawn is actually moving 1 spot instead of 2 when a piece is in front it
+			if (checkVertical(piece, capture))
+				moveValid = true;
+			else
+				moveValid = false;
+			
+			checkedKing = kingChecked(oldColor);
+			if (checkedKing[0] == true && checkedKing[1] == oldColor)
+			{
+				moveValid = false;
+			}
+
+			return moveValid;
+			break;
+			
 		case "rook":
 			//If it's not the same row then the piece is moving vertically
 			if (pieceRow - captureRow != 0)
@@ -30,8 +48,8 @@ function validMove(piece, capture, pieceType)
 			}
 				
 			//check if a king is in check, else return false
-			checkedKing = kingChecked();
-			if (checkedKing[0] == true && checkedKing[1] == pieceColor)
+			checkedKing = kingChecked(oldColor);
+			if (checkedKing[0] == true && checkedKing[1] == oldColor)
 			{
 				moveValid = false;
 			}
@@ -47,19 +65,17 @@ function validMove(piece, capture, pieceType)
 			
 			//for the purposes of testing if the king is in check, logically at this point the move is still validMove
 			//so assuming the piece does move check if the king is in check with the new piece position
-			checkedKing = kingChecked();
 			//If the king that is being checked is of the same color as the piece being moved the move is invalid
-			if (checkedKing[0] == true && checkedKing[1] == pieceColor)
+			checkedKing = kingChecked(oldColor);
+			if (checkedKing[0] == true && checkedKing[1] == oldColor)
 			{
 				moveValid = false;
 			}
-			
-			log(checkedKing);
+
 			return moveValid;
 			break;
 					
 		case "queen":
-					
 			//check horizontal squares if the queen is moving horizontally
 			if (pieceRow - captureRow == 0)
 			{
@@ -89,8 +105,19 @@ function validMove(piece, capture, pieceType)
 			
 			//before checking if the king is in check assume the move is valid for now
 			
-			checkedKing = kingChecked();
-			if (checkedKing[0] == true && checkedKing[1] == pieceColor)
+			console.log("Queen calling kingChecked with color: " + oldColor);
+			checkedKing = kingChecked(oldColor);
+			if (checkedKing[0] == true && checkedKing[1] == oldColor)
+			{
+				moveValid = false;
+			}
+
+			return moveValid;
+			break;
+			
+		case "knight":
+			checkedKing = kingChecked(oldColor);
+			if (checkedKing[0] == true && checkedKing[1] == oldColor)
 			{
 				moveValid = false;
 			}
@@ -108,13 +135,12 @@ function validMove(piece, capture, pieceType)
 					moveValid = false;
 			}
 			
-			checkedKing = kingChecked();
-			log(checkedKing);
-			if (checkedKing[0] == true && checkedKing[1] == pieceColor)
+			checkedKing = kingChecked(oldColor);
+			if (checkedKing[0] == true && checkedKing[1] == oldColor)
 			{
 				moveValid = false;
 			}
-			
+
 			return moveValid;
 			break;
 	}
@@ -249,45 +275,46 @@ function checkDiagonal (piece, capture)
 }
 		
 //Check if a king is in check
-function kingChecked()
+function kingChecked(pieceColor)
 {	
 	//In order to check if a king is in check, for most pieces we only need to check
 	//the open spots near a king. If the only open spot by a king is 1 square above it
 	//then we only need to check if a piece is attacking from there, while also checking
 	//knights since they can jump pieces
-	var whiteKingNearbySquares = findNearbySquares(whiteKingButton);
-	var blackKingNearbySquares = findNearbySquares(blackKingButton);
 	
-	//So we need to check from that spot if it puts a king in check
-	log(whiteKingButton);
-	log(blackKingButton);
-	var kingInCheck = [];
+	
+	pieceColor == white ? kingButton = whiteKingButton : kingButton = blackKingButton;
 
+	//var tempKingButton = tempButtonSetup(buttons[kingButton], prevKingButton);
+	//temporaryClear(prevKingButton);
+	var nearbySquares;
+	var kingInCheck = [];
+	pieceColor == white ? nearbySquares = findNearbySquares(whiteKingButton) : nearbySquares = findNearbySquares(blackKingButton);
 	//Now that we have the empty squares around the king simply follow them
 
-	for (i = 0; i < whiteKingNearbySquares.length; i++)
+
+	console.log("kingbutton: " + kingButton);
+	for (i = 0; i < nearbySquares.length; i++)
 	{
-		if (whiteKingNearbySquares[i][1] == "Diagonal left up")
+		if (nearbySquares[i][1] == "Diagonal left up")
 		{
-			console.log("checking diagonal left up");
 			//If a pawn is on the square 1 diagonal left from the king then it can capture the king
-			//Get the button position saved in the whiteKingNearbySquares squares array and use that to check
+			//Get the button position saved in the nearbySquares squares array and use that to check
 			//The buttons array to see if the status is equal to a black pawn
-			if (buttons[whiteKingNearbySquares[i][0]].status >= (bp1) && buttons[whiteKingNearbySquares[i][0]].status <= (bp8-1))
+			if (buttons[nearbySquares[i][0]].status >= (bp1) && buttons[nearbySquares[i][0]].status <= (bp8-1))
 			{
 				log("white king checked by a blackpawn, diag left up");
 				kingInCheck.push(true);
-				kingInCheck.push(white);
-				log(kingInCheck);
+				pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
+				//restoreButton(tempButton, prevKingButton);
 				return kingInCheck;
 			}
 			
 			//14  is top left corner
-			for (j = whiteKingButton - 13; j > 0; j -= 13)
+			for (j = kingButton - 13; j > 0; j -= 13)
 			{
 				//If the first piece diagonal to the left is the same color then it is blocking the king from being checked
-				console.log("DLU J: " + j);
-				if (buttons[j].pieceColor == white || buttons[j].status == -1)
+				if (buttons[j].pieceColor == pieceColor || buttons[j].status == -1)
 				{
 					break;
 				}
@@ -298,26 +325,24 @@ function kingChecked()
 				}
 				
 				//Or else if there is a bishop or queen checking the king
-				log("colors for king buttons: " + buttons[whiteKingButton].pieceColor);
-				log("Colors for buttons[j]: " + buttons[j].pieceColor);
-				if ((buttons[j].type == 'bishop' || buttons[j].type == 'queen') && buttons[whiteKingButton].pieceColor != buttons[j].pieceColor)
+				if ((buttons[j].type == 'bishop' || buttons[j].type == 'queen') && buttons[kingButton].pieceColor != buttons[j].pieceColor)
 				//else
 				{
 					kingInCheck.push(true);
-					kingInCheck.push(white);
+					pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
 					log("bishop || queen");
+					//restoreButton(tempButton, prevKingButton);
 					return kingInCheck;
 				}
 			}
 		}
 				
 		//The pieces that can capture from the left are: rook and queen
-		if (whiteKingNearbySquares[i][1] == "Left")
+		if (nearbySquares[i][1] == "Left")
 		{
-			log("CHECKING LEFT");
-			for (j = whiteKingButton - 12; j > 0 ; j -= 12)
+			for (j = kingButton - 12; j > 0 ; j -= 12)
 			{
-				if (buttons[j].pieceColor == white || buttons[j].status == -1)
+				if (buttons[j].pieceColor == pieceColor || buttons[j].status == -1)
 				{
 					break;
 				}
@@ -327,28 +352,36 @@ function kingChecked()
 					break;
 				}
 				
-				if ((buttons[j].type == 'rook' || buttons[j].type == 'queen') &&  buttons[whiteKingButton].pieceColor != buttons[j].pieceColor)
+				if ((buttons[j].type == 'rook' || buttons[j].type == 'queen') &&  buttons[kingButton].pieceColor != buttons[j].pieceColor)
 				{
 					log("LEFT ROOK || QUEEN");
 					kingInCheck.push(true);
-					kingInCheck.push(white);
+					pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
+					//restoreButton(tempButton, prevKingButton);
 					return kingInCheck;
 				}
 			}
 		}
 		
-		if (whiteKingNearbySquares[i][1] == "Diagonal left down")
+		if (nearbySquares[i][1] == "Diagonal left down")
 		{
-			console.log("checking diagonal left down");
 			//If a pawn is on the square 1 diagonal left from the king then it can capture the king
-			//Get the button position saved in the whiteKingNearbySquares squares array and use that to check
+			//Get the button position saved in the nearbySquares squares array and use that to check
 			//The buttons array to see if the status is equal to a black pawn
 			
+			if (buttons[nearbySquares[i][0]].status >= (wp1) && buttons[nearbySquares[i][0]].status <= (wp8-1))
+			{
+				log("black king checked by a blackpawn, diag left down");
+				kingInCheck.push(true);
+				pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
+				//restoreButton(tempButton, prevKingButton);
+				return kingInCheck;
+			}
 			//At most 7 iterations of -= 11
-			for (j = whiteKingButton - 11; j > 0; j -= 11)
+			for (j = kingButton - 11; j > 0; j -= 11)
 			{
 				//If the first piece diagonal to the left is the same color then it is blocking the king from being checked
-				if (buttons[j].pieceColor == white || buttons[j].status == -1)
+				if (buttons[j].pieceColor == pieceColor || buttons[j].status == -1)
 				{
 					break;
 				}
@@ -359,24 +392,24 @@ function kingChecked()
 				}
 				
 				//Or else if there is a bishop or queen checking the king
-				if ((buttons[j].type == 'bishop' || buttons[j].type == 'queen') && buttons[whiteKingButton].pieceColor != buttons[j].pieceColor)
+				if ((buttons[j].type == 'bishop' || buttons[j].type == 'queen') && buttons[kingButton].pieceColor != buttons[j].pieceColor)
 				//else
 				{
 					kingInCheck.push(true);
-					kingInCheck.push(white);
+					pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
 					log("bishop || queen");
+					//restoreButton(tempButton, prevKingButton);
 					return kingInCheck;
 				}
 			}
 		}
 		
 		//The pieces that can capture up are: rook and queen
-		if (whiteKingNearbySquares[i][1] == "Up")
+		if (nearbySquares[i][1] == "Up")
 		{
-			log("CHECKING UP");
-			for (j = whiteKingButton - 1; j > 0; j -= 1)
+			for (j = kingButton - 1; j > 0; j -= 1)
 			{
-				if (buttons[j].pieceColor == white || buttons[j].status == -1)
+				if (buttons[j].pieceColor == pieceColor || buttons[j].status == -1)
 				{
 					break;
 				}
@@ -386,23 +419,23 @@ function kingChecked()
 					break;
 				}
 				
-				if ((buttons[j].type == 'rook' || buttons[j].type == 'queen') &&  buttons[whiteKingButton].pieceColor != buttons[j].pieceColor)
+				if ((buttons[j].type == 'rook' || buttons[j].type == 'queen') &&  buttons[kingButton].pieceColor != buttons[j].pieceColor)
 				{
 					log("UP ROOK || QUEEN");
 					kingInCheck.push(true);
-					kingInCheck.push(white);
+					pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
+					//restoreButton(tempButton, prevKingButton);
 					return kingInCheck;
 				}
 			}
 		}
 		
 		//The pieces that can capture down are: rook and queen
-		if (whiteKingNearbySquares[i][1] == "Down")
+		if (nearbySquares[i][1] == "Down")
 		{
-			log("CHECKING down");
-			for (j = whiteKingButton + 1; j < 105; j += 1)
+			for (j = kingButton + 1; j < 105; j += 1)
 			{
-				if (buttons[j].pieceColor == white || buttons[j].status == -1)
+				if (buttons[j].pieceColor == pieceColor || buttons[j].status == -1)
 				{
 					break;
 				}
@@ -412,60 +445,57 @@ function kingChecked()
 					break;
 				}
 				
-				if ((buttons[j].type == 'rook' || buttons[j].type == 'queen') &&  buttons[whiteKingButton].pieceColor != buttons[j].pieceColor)
+				if ((buttons[j].type == 'rook' || buttons[j].type == 'queen') &&  buttons[kingButton].pieceColor != buttons[j].pieceColor)
 				{
 					log("DOWN ROOK || QUEEN");
 					kingInCheck.push(true);
-					kingInCheck.push(white);
+					pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
+					//restoreButton(tempButton, prevKingButton);
 					return kingInCheck;
 				}
 			}
 		}
 		
-		if (whiteKingNearbySquares[i][1] == "Diagonal right up")
+		if (nearbySquares[i][1] == "Diagonal right up")
 		{
-			log("checkeing diag right");
-			if (buttons[whiteKingNearbySquares[i][0]].status >= (bp1) && buttons[whiteKingNearbySquares[i][0]].status <= (bp8-1))
+			if (buttons[nearbySquares[i][0]].status >= (bp1) && buttons[nearbySquares[i][0]].status <= (bp8-1))
 			{
 				log("white king checked by a blackpawn, diag right up");
 				kingInCheck.push(true);
-				kingInCheck.push(white);
+				pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
+				//restoreButton(tempButton, prevKingButton);
 				return kingInCheck;
 			}
 
-			for (j = whiteKingButton + 11; j < 105; j += 11)
+			for (j = kingButton + 11; j < 105; j += 11)
 			{
-				log("diag right type: " +  buttons[j].type);
-				log("diagright j : " + j);
 				//If the first piece diagonal to the left is the same color then it is blocking the king from being checked
-				if (buttons[j].pieceColor == white || buttons[j].status == -1)
+				if (buttons[j].pieceColor == pieceColor || buttons[j].status == -1)
 				{
-					log("white break");
 					break;
 				}
 				
 				if (buttons[j].status > 0 && buttons[j].type != 'bishop' && buttons[j].type != 'queen')
 				{
-					log("status  break");
 					break;
 				}
 				//Or else if there is a bishop or queen checking the king
-				if ((buttons[j].type == 'bishop' || buttons[j].type == 'queen') && buttons[whiteKingButton].pieceColor != buttons[j].pieceColor)
+				if ((buttons[j].type == 'bishop' || buttons[j].type == 'queen') && buttons[kingButton].pieceColor != buttons[j].pieceColor)
 				{
 					kingInCheck.push(true);
-					kingInCheck.push(white);
+					pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
 					log("DIAGRIGHT BISHOP || QUEEN");
+					//restoreButton(tempButton, prevKingButton);
 					return kingInCheck;
 				}
 			}			
 		}
 
-		if (whiteKingNearbySquares[i][1] == "Right")
+		if (nearbySquares[i][1] == "Right")
 		{
-			log("CHECKING RIGHT");
-			for (j = whiteKingButton + 12; j < 105; j += 12)
+			for (j = kingButton + 12; j < 105; j += 12)
 			{
-				if (buttons[j].pieceColor == white || buttons[j].status == -1)
+				if (buttons[j].pieceColor == pieceColor || buttons[j].status == -1)
 				{
 					break;
 				}
@@ -475,22 +505,31 @@ function kingChecked()
 					break;
 				}
 				
-				if ((buttons[j].type == 'rook' || buttons[j].type == 'queen') &&  buttons[whiteKingButton].pieceColor != buttons[j].pieceColor)
+				if ((buttons[j].type == 'rook' || buttons[j].type == 'queen') &&  buttons[kingButton].pieceColor != buttons[j].pieceColor)
 				{
 					log("LEFT ROOK || QUEEN");
 					kingInCheck.push(true);
-					kingInCheck.push(white);
+					pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
+					//restoreButton(tempButton, prevKingButton);
 					return kingInCheck;
 				}
 			}
 		}
 		
-		if (whiteKingNearbySquares[i][1] == "Diagonal right down")
+		if (nearbySquares[i][1] == "Diagonal right down")
 		{
-			for (j = whiteKingButton + 13; j < 105; j += 13)
+			if (buttons[nearbySquares[i][0]].status >= (wp1) && buttons[nearbySquares[i][0]].status <= (wp8))
+			{
+				log("black king checked by a blackpawn, diag left down");
+				kingInCheck.push(true);
+				pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
+				//restoreButton(tempButton, prevKingButton);
+				return kingInCheck;
+			}
+			for (j = kingButton + 13; j < 105; j += 13)
 			{
 				//If the first piece diagonal to the left is the same color then it is blocking the king from being checked
-				if (buttons[j].pieceColor == white || buttons[j].status == -1)
+				if (buttons[j].pieceColor == pieceColor || buttons[j].status == -1)
 				{
 					break;
 				}
@@ -499,36 +538,50 @@ function kingChecked()
 				{
 					break;
 				}
+				
+				//If the first spot is occupied by an enemy pawn the king is checked
+				if (j == kingButton + 13 && buttons[j].type == 'pawn' && buttons[kingButton].pieceColor != buttons[j].pieceColor)
+				{
+					console.log("checked by pawn");
+					kingInCheck.push(true);
+					pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
+					//restoreButton(tempButton, prevKingButton);
+					return kingInCheck;
+				}
 				//Or else if there is a bishop or queen checking the king
-				if ((buttons[j].type == 'bishop' || buttons[j].type == 'queen') && buttons[whiteKingButton].pieceColor != buttons[j].pieceColor)
+				if ((buttons[j].type == 'bishop' || buttons[j].type == 'queen') && buttons[kingButton].pieceColor != buttons[j].pieceColor)
 				{
 					kingInCheck.push(true);
-					kingInCheck.push(white);
+					pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
 					log("DIAGRIGHT BISHOP || QUEEN");
+					//restoreButton(tempButton, prevKingButton);
 					return kingInCheck;
 				}
 			}			
 		}
 	}
 
-	var knightSquares = [whiteKingButton-14, whiteKingButton-25, whiteKingButton-23, whiteKingButton-10,
-						 whiteKingButton+14, whiteKingButton+25, whiteKingButton+23, whiteKingButton+10];
+	var knightSquares = [kingButton-14, kingButton-25, kingButton-23, kingButton-10,
+						 kingButton+14, kingButton+25, kingButton+23, kingButton+10];
 						 
 	for (i = 0; i < knightSquares.length; i++)
 	{
 		if (buttons[knightSquares[i]] === undefined)
 			continue;
-		if (buttons[knightSquares[i]].type == 'knight' && buttons[knightSquares[i]].pieceColor != 0)
+		if (buttons[knightSquares[i]].type == 'knight' && buttons[knightSquares[i]].pieceColor != pieceColor)
 			{
 			kingInCheck.push(true);
-			kingInCheck.push(white);
+			pieceColor == white ? kingInCheck.push(white) : kingInCheck.push(black);
 			log("CHECKED BYKNIGHT");
+			//restoreButton(tempButton, prevKingButton);
 			return kingInCheck;
 		}
 	}
-
-	kingInCheck.push(false);
-	kingInCheck.push(white);
+	
+	console.log("restoring button, king passed all checks");
+	//restoreButton(tempKingButton, prevKingButton);
+	kingInCheck[0] = (false);
+	pieceColor == white ? kingInCheck[1] = black : kingInCheck[1] = white;
 	return kingInCheck;
 }
 		
@@ -537,8 +590,12 @@ function findNearbySquares(kingPosition)
 	var nearbySquares = [];
 	var i = 0;
 	
+	//These checks work by checking where the king is GOING to move and finding what squares to check from there
+	//The checks will see where the king is moving from and flag that square as empty
+	
 	//square 1 left 1 up
-	if (buttons[kingPosition - 13].status == 0 || buttons[kingPosition-13].pieceColor != buttons[kingPosition].pieceColor)
+	if (buttons[kingPosition - 13].status == 0 || buttons[kingPosition-13].pieceColor != buttons[kingPosition].pieceColor
+	    || ((kingPosition - 13) == prevKingButton))
 	{	
 		nearbySquares.push([]);
 		nearbySquares[i][0] = kingPosition - 13;
@@ -547,16 +604,18 @@ function findNearbySquares(kingPosition)
 	}	
 			
 	//square 1 left of current piece
-	if (buttons[kingPosition - 12].status == 0 || buttons[kingPosition-12].pieceColor != buttons[kingPosition].pieceColor)
+	if (buttons[kingPosition - 12].status == 0 || buttons[kingPosition-12].pieceColor != buttons[kingPosition].pieceColor
+		|| ((kingPosition - 12) == prevKingButton))
 	{
 		nearbySquares.push([]);
 		nearbySquares[i][0] = kingPosition - 12;
 		nearbySquares[i][1] = "Left";
 		i++;
-	}		
-
+	}
+	
 	//square 1 left 1 down
-	if (buttons[kingPosition - 11].status == 0 || buttons[kingPosition-11].pieceColor != buttons[kingPosition].pieceColor)
+	if (buttons[kingPosition - 11].status == 0 || buttons[kingPosition-11].pieceColor != buttons[kingPosition].pieceColor
+		|| ((kingPosition - 11) == prevKingButton))
 	{
 		nearbySquares.push([]);
 		nearbySquares[i][0] = kingPosition - 11;
@@ -565,7 +624,8 @@ function findNearbySquares(kingPosition)
 	}
 	
 	//square 1 above current piece
-	if (buttons[kingPosition - 1].status == 0 || buttons[kingPosition-1].pieceColor != buttons[kingPosition].pieceColor)
+	if (buttons[kingPosition - 1].status == 0 || buttons[kingPosition-1].pieceColor != buttons[kingPosition].pieceColor
+		|| ((kingPosition - 1) == prevKingButton))
 	{
 		nearbySquares.push([]);
 		nearbySquares[i][0] = kingPosition - 1;
@@ -574,7 +634,8 @@ function findNearbySquares(kingPosition)
 	}
 	
 	//square 1 below current piece
-	if (buttons[kingPosition + 1].status == 0 || buttons[kingPosition+1].pieceColor != buttons[kingPosition].pieceColor)
+	if (buttons[kingPosition + 1].status == 0 || buttons[kingPosition+1].pieceColor != buttons[kingPosition].pieceColor
+		|| ((kingPosition + 1) == prevKingButton))
 	{
 		nearbySquares.push([]);
 		nearbySquares[i][0] = kingPosition + 1;
@@ -583,7 +644,8 @@ function findNearbySquares(kingPosition)
 	}
 	
 	//square 1 right 1 up
-	if (buttons[kingPosition + 11].status == 0 || buttons[kingPosition+11].pieceColor != buttons[kingPosition].pieceColor)
+	if (buttons[kingPosition + 11].status == 0 || buttons[kingPosition+11].pieceColor != buttons[kingPosition].pieceColor
+		|| ((kingPosition + 11) == prevKingButton))
 	{
 		nearbySquares.push([]);
 		nearbySquares[i][0] = kingPosition + 11;
@@ -592,7 +654,8 @@ function findNearbySquares(kingPosition)
 	}
 	
 	//square 1 right of current piece
-	if (buttons[kingPosition + 12].status == 0 || buttons[kingPosition+12].pieceColor != buttons[kingPosition].pieceColor)
+	if (buttons[kingPosition + 12].status == 0 || buttons[kingPosition+12].pieceColor != buttons[kingPosition].pieceColor
+		|| ((kingPosition + 12) == prevKingButton))
 	{
 		nearbySquares.push([]);
 		nearbySquares[i][0] = kingPosition + 12;
@@ -601,14 +664,15 @@ function findNearbySquares(kingPosition)
 	}
 
 	//square 1 right 1 down
-	if (buttons[kingPosition + 13].status == 0 || buttons[kingPosition+13].pieceColor != buttons[kingPosition].pieceColor)
+	if (buttons[kingPosition + 13].status == 0 || buttons[kingPosition+13].pieceColor != buttons[kingPosition].pieceColor
+		|| ((kingPosition + 13) == prevKingButton))
 	{
 		nearbySquares.push([]);
 		nearbySquares[i][0] = kingPosition + 13;
 		nearbySquares[i][1] = "Diagonal right down";
 		i++;
 	}
-	
+	console.log(nearbySquares);
 	return nearbySquares;
 }
 
@@ -711,27 +775,39 @@ function textUpdate(buttonSelected){
 function doNothing(){
 }
 
+function temporaryClear (oldPosition)
+{
+	console.log("CLEARING BUTTON AT POSITION: " + oldPosition);
+	buttons[oldPosition].status = 0;
+	buttons[oldPosition].type = 'none';
+	buttons[oldPosition].pieceColor = 2;
+}
 
+function restoreButton (buttonData, position)
+{
+	console.log("RESTORING BUTTON AT POSITION: " + position);
+	buttons[position].status = buttonData[0];
+	buttons[position].type = buttonData[1];
+	buttons[position].pieceColor = buttonData[2];
+}
 
+//Piece is the button the piece is moving to, prevButton is where that piece was
+function tempButtonSetup (piece, prevButton)
+{
+	var nextButton = piece.gridNum;
+	var tempButton = [];
+	tempButton.push(buttons[prevButton].status);
+	tempButton.push(buttons[prevButton].type);
+	tempButton.push(buttons[prevButton].pieceColor);
+	
+	if (pieceType[currentPiece-1].pieceColor == white)
+	{
+		buttons[nextButton].pieceColor = white;
+	}
+	else
+	{
+		buttons[nextButton].pieceColor = black;
+	}	
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	return tempButton;
+}
