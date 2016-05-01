@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+<!DOCTYPE HTML
 <html>
 	<head>
 		<meta charset="UTF-8">
@@ -38,6 +38,9 @@
 		var moveCount = 0;
 		var whiteKingChecked = false;
 		var blackKingChecked = false;
+		var kingCheckedBy;
+		var yText = 0;
+		var wave = 0;
 		var prevButton;
 		var prevKingButton = 0;
 		var tempButton = [];
@@ -52,6 +55,9 @@
 		
 		//generate grid image and position
 		var gridsize = 36;
+		
+		// richtext array
+		var richText = [];
 
 		// button layer over the chessboard
 		var buttons = [];
@@ -104,7 +110,7 @@
 				// make the button interactive...
 				button.interactive = true;	
 				//button transparency
-				button.alpha = 0.9;
+				button.alpha = 1.0;
 				//mouse pointer over a button
 				button.mouseover = function(){
 					this.tint=0x00ff00;
@@ -195,7 +201,7 @@
 			}
 			
 			piece.anchor.x = 0.5;
-			piece.anchor.y = 0.5;
+			piece.anchor.y = 0.75;
 		
 			stage.addChild(piece);
 			pieces.push(piece);
@@ -303,13 +309,28 @@
 		function animate(){
 			requestAnimationFrame(animate);
 			renderer.render(stage);
+			for (var i=0; i<10; i++){
+				if (typeof richText[i] != "undefined"){
+					//richText[i].rotation -= Math.random();
+				}
+			}
+			
+			if (typeof pieces[currentPiece-1] != "undefined"){
+				pieces[currentPiece-1].position.y -= Math.sin(wave)/3;
+				pieces[currentPiece-1].scale.x = 1.1;
+				pieces[currentPiece-1].scale.y = 1.1;
+				wave+=0.1;
+			}
 			for (var i = 0; i<120; i++){
 				if (buttons[i].status == 0){
 					buttons.tint = defaultColor;
 				}
 	
 				for (var j = 0; j < numPieces; j++)
-				if (buttons[i].status == j+1) {
+				if (buttons[i].status == j+1 && typeof pieces[currentPiece-1] == "undefined") {
+					wave = 0;
+					pieces[j].scale.x = 1;
+					pieces[j].scale.y = 1;
 					pieces[j].position.x = buttons[i].position.x;
 					pieces[j].position.y = buttons[i].position.y;
 					pieces[j].gridNum = buttons[i].gridnum;
@@ -495,7 +516,7 @@
 								updatePosition(this);
 							}
 							//En Passant
-							if (pieceType[buttons[currentPosition-12].status -1] === undefined){pieceType[buttons[currentPosition-12].status -1] = 0;}
+							//if (pieceType[buttons[currentPosition-1].status -1] === undefined){pieceType[buttons[currentPosition-12].status -1] = 0;}
 							//En passant left
 							if (pieceType[currentPiece-1].rowNum == 6
 								&& buttons[currentPosition-12].type == 'pawn'

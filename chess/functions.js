@@ -692,14 +692,14 @@ function keyPressed (event)
 	
 	if (event.keyCoded == 81)
 	{
-		pieces[currentPiece-1].type = "queen";
+		pieces[currentPiece-1].type = 'queen';
 		deletePiece(pieces[currentPiece-1].status-1);
 		this.status = currentPiece;
 		
 		pieces[currentPiece-1] = new PIXI.Sprite(wQueenTexture);
 		pieces[currentPiece-1].type = 'queen';
 		pieces[currentPiece-1].anchor.x = 0.5;
-		pieces[currentPiece-1].anchor.y = 0.5;
+		pieces[currentPiece-1].anchor.y = 0.75;
 		pieces[currentPiece-1].pieceColor = white;
 		
 		stage.addChild(pieceType[currentPiece-1]);
@@ -718,6 +718,61 @@ function updatePosition (buttonSelected)
 	buttons[currentPosition].pieceColor = 2;
 	pieces[currentPiece-1].firstMove = false;
 	moveCount += 1;
+	textUpdate(buttonSelected);
+}
+
+function textUpdate(buttonSelected){
+	var Col;
+	if (typeof richText != "undefined") {
+		stage.removeChild(richText);
+	}
+	var style = {
+		font : 'bold 18px Arial',
+		fill : '#F7EDCA',
+		stroke : '#4a1850',
+		strokeThickness : 2,
+		dropShadow : false,
+		dropShadowColor : '#000000',
+		dropShadowAngle : Math.PI / 6,
+		dropShadowDistance : 6,
+		wordWrap : true,
+		wordWrapWidth : 440
+	};
+	if (pieces[currentPiece-1].pieceColor == 0){
+		color = "White";
+	}
+	else{
+		color = "Black";
+	}
+	if (pieces[currentPiece-1].colNum == 1){Col1 = 'A';}
+	if (pieces[currentPiece-1].colNum == 2){Col1 = 'B';}
+	if (pieces[currentPiece-1].colNum == 3){Col1 = 'C';}
+	if (pieces[currentPiece-1].colNum == 4){Col1 = 'D';}
+	if (pieces[currentPiece-1].colNum == 5){Col1 = 'E';}
+	if (pieces[currentPiece-1].colNum == 6){Col1 = 'F';}
+	if (pieces[currentPiece-1].colNum == 7){Col1 = 'G';}
+	if (pieces[currentPiece-1].colNum == 8){Col1 = 'H';}
+	
+	if (buttonSelected.colNum == 1){Col2 = 'A';}
+	if (buttonSelected.colNum == 2){Col2 = 'B';}
+	if (buttonSelected.colNum == 3){Col2 = 'C';}
+	if (buttonSelected.colNum == 4){Col2 = 'D';}
+	if (buttonSelected.colNum == 5){Col2 = 'E';}
+	if (buttonSelected.colNum == 6){Col2 = 'F';}
+	if (buttonSelected.colNum == 7){Col2 = 'G';}
+	if (buttonSelected.colNum == 8){Col2 = 'H';}
+	
+	rText = new PIXI.Text(color  + ' '  + pieces[currentPiece-1].type
+								+ ' '   + Col1 + (10-pieces[currentPiece-1].rowNum)
+								+' to ' + Col2 +	(10-buttonSelected.rowNum),style);
+	rText.x = 360;
+	rText.y = yText;
+	yText+= 16;
+	richText.push(rText);
+	stage.addChild(rText);	
+}
+
+function doNothing(){
 }
 
 function temporaryClear (oldPosition)
