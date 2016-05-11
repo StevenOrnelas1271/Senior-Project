@@ -8,7 +8,7 @@
 				margin: auto;
 				padding: 0;
 				position: absolute;
-				background-color: #000000;
+				background-color: #00001F;
 			}
 		</style>
 		<script src="pixi.js"></script>
@@ -17,8 +17,15 @@
 	<body>
 		<script>
 		var stage = new PIXI.Container();
-		var renderer = PIXI.autoDetectRenderer(600, 500);
+		var renderer = PIXI.autoDetectRenderer(500, 600);
+		
+		var UIstage = new PIXI.Container();
+		var UIrenderer = PIXI.autoDetectRenderer(250,600);
+		
 		document.body.appendChild(renderer.view);
+		document.body.appendChild(UIrenderer.view);
+
+		
 		//debug option by pressing space
 		window.addEventListener('keydown', this.keyPressed.bind(this), false);
 		var debugMode = false;
@@ -43,6 +50,7 @@
 		var prevButton;
 		var prevKingButton = 0;
 		var tempButton = [];
+		var boardRotate = false;
 		
 		
 		var wp1 = 1, wp2 = 2, wp3 = 3, wp4 = 4, wp5 = 5, wp6 = 6, wp7 = 7, wp8 = 8;
@@ -55,7 +63,7 @@
 		var firstMove;
 		
 		//generate grid image and position
-		var gridsize = 36;
+		var gridsize = 48;
 		
 		// richtext array
 		var richText = [];
@@ -73,6 +81,15 @@
 			log("this row num: " + this.rowNum);
 			*/
 		};
+		
+		var lightWood = PIXI.Texture.fromImage("assets/lightwood.png");
+		var lightWood1 = PIXI.Sprite.fromImage("assets/lightwood1.png");
+		var lightWood2 = PIXI.Sprite.fromImage("assets/lightwood2.png");
+		var lightWood3 = PIXI.Sprite.fromImage("assets/lightwood3.png");
+		var lightWood4 = PIXI.Sprite.fromImage("assets/lightwood4.png");
+		
+		var randTile;
+		
 
 		// create a 10 x 12 grid of interactive squares
 		for (var i = 0; i < 10; i++){
@@ -82,17 +99,28 @@
 
 				if ((i >= 1 && i <= 8) && (j >= 2 && j <= 9)){
 					if ((i%2 == 0 && j%2 != 0) || i%2 != 0 && j%2 ==0){
-						var button = PIXI.Sprite.fromImage("assets/white_grid.png");
+						var button = PIXI.Sprite.fromImage("assets/lightWood1.png");
+						//var button = PIXI.Sprite.fromImage("assets/white_grid.png");
+						
+						randTile = (Math.random() * 4);
+						if (randTile == 0){ var button = lightWood1;}
+						if (randTile == 1){ var button = lightWood2;}
+						if (randTile == 2){ var button = lightWood3;}
+						if (randTile == 3){ var button = lightWood4;}
 					}
+					
 					else{
-						var button = PIXI.Sprite.fromImage("assets/black_grid.png");
+						//var button = PIXI.Sprite.fromImage("assets/black_grid.png");
+						var button = PIXI.Sprite.fromImage("assets/darkWood3.png");
 					}
 					// initialize board state
 					button.status = 0;
 				}
 				else{
-					var button = PIXI.Sprite.fromImage("assets/grass_grid.png");
+					//var button = PIXI.Sprite.fromImage("assets/grass_grid.png");
+					var button = PIXI.Sprite.fromImage("assets/grassBorder.png");
 					button.status = -1;
+					
 				}
 				
 				//declare row and column numbers
@@ -104,6 +132,8 @@
 				button.buttonMode = true;
 
 				button.anchor.set(0.5);
+				button.scale.x = .15;
+				button.scale.y = .15;
 
 				button.position.x = gridsize*i + gridsize/2;
 				button.position.y = gridsize*j + gridsize/2;
@@ -111,7 +141,7 @@
 				// make the button interactive...
 				button.interactive = true;	
 				//button transparency
-				button.alpha = 1.0;
+				//button.alpha = 1.0;
 				//mouse pointer over a button
 				button.mouseover = function(){
 					this.tint=0x00ff00;
@@ -203,6 +233,8 @@
 			
 			piece.anchor.x = 0.5;
 			piece.anchor.y = 0.75;
+			piece.scale.x = 1.25;
+			piece.scale.y = 1.25;
 		
 			stage.addChild(piece);
 			pieces.push(piece);
@@ -257,6 +289,7 @@
 			}
 			pieces[i].firstMove = true;
 			pieces[i].doubleMove = false;
+			
 		}
 		
 		//initialize board states		
@@ -309,6 +342,7 @@
 		//render function
 		function animate(){
 			requestAnimationFrame(animate);
+			UIrenderer.render(UIstage);
 			renderer.render(stage);
 			renderer.render(UIcontainer);
 			for (var i=0; i<10; i++){
@@ -319,8 +353,8 @@
 			
 			if (typeof pieces[currentPiece-1] != "undefined"){
 				pieces[currentPiece-1].position.y -= Math.sin(wave)/3;
-				pieces[currentPiece-1].scale.x = 1.1;
-				pieces[currentPiece-1].scale.y = 1.1;
+				//pieces[currentPiece-1].scale.x = 1.1;
+				//pieces[currentPiece-1].scale.y = 1.1;
 				wave+=0.1;
 			}
 			for (var i = 0; i<120; i++){
@@ -331,8 +365,8 @@
 				for (var j = 0; j < numPieces; j++)
 				if (buttons[i].status == j+1 && typeof pieces[currentPiece-1] == "undefined") {
 					wave = 0;
-					pieces[j].scale.x = 1;
-					pieces[j].scale.y = 1;
+					//pieces[j].scale.x = 1;
+					//pieces[j].scale.y = 1;
 					pieces[j].position.x = buttons[i].position.x;
 					pieces[j].position.y = buttons[i].position.y;
 					pieces[j].gridNum = buttons[i].gridnum;
