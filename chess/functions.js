@@ -1127,15 +1127,15 @@ function log(msg) {
 }
 		
 function keyPressed (event)
-{
+{	
 	//if d is pressed
 	if (event.keyCode == 68)
 	{
 		(debugMode == true) ? debugMode = false : debugMode = true;
 		(debugMode == true) ? log("Debugging enabled, turns are disabled.") : log("Debugging disabled"); 
 	}
-	
-	if (event.keyCoded == 81)
+	// if 'q' is pressed
+	if (event.keyCode == 81)
 	{
 		pieces[currentPiece-1].type = 'queen';
 		deletePiece(pieces[currentPiece-1].status-1);
@@ -1149,6 +1149,31 @@ function keyPressed (event)
 		
 		stage.addChild(pieceType[currentPiece-1]);
 		pieces.push(pieceType[currentPiece-1]);
+	}
+	
+	//if 'r' is pressed
+	//rotate the game board
+	var xShift = 480, yShift = 576;
+	if (event.keyCode == 82){
+		if (boardRotate == false){
+			stage.rotation += Math.PI;
+			stage.position.x += xShift;
+			stage.position.y += yShift;
+			boardRotate = true;
+			for (var i = 0; i < numPieces; i++){
+				pieces[i].rotation += Math.PI;
+			}
+			return;
+		}
+		if (boardRotate == true){
+			stage.rotation += Math.PI;
+			stage.position.x -= xShift;
+			stage.position.y -= yShift;
+			boardRotate = false;
+			for (var i = 0; i < numPieces; i++){
+				pieces[i].rotation += Math.PI;
+			}
+		}
 	}
 }
 		
@@ -1209,11 +1234,11 @@ function textUpdate(buttonSelected){
 	rText = new PIXI.Text(color  + ' '  + pieces[currentPiece-1].type
 								+ ' '   + Col1 + (10-pieces[currentPiece-1].rowNum)
 								+' to ' + Col2 +	(10-buttonSelected.rowNum),style);
-	rText.x = 360;
+	//rText.x = 500;
 	rText.y = yText;
 	yText+= 16;
 	richText.push(rText);
-	stage.addChild(rText);	
+	UIstage.addChild(rText);	
 }
 
 function temporaryClear (oldPosition)
