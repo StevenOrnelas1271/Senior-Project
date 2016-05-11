@@ -19,7 +19,6 @@
 		var stage = new PIXI.Container();
 		var renderer = PIXI.autoDetectRenderer(600, 500);
 		document.body.appendChild(renderer.view);
-		
 		//debug option by pressing space
 		window.addEventListener('keydown', this.keyPressed.bind(this), false);
 		var debugMode = false;
@@ -32,13 +31,13 @@
 		var white = 0, black = 1;
 		var playerTurn = white;
 		var numPieces = 32;
-		var checkedKingColor;
+		var checkedKing;
 		var whiteKingButton;
 		var blackKingButton;
 		var moveCount = 0;
 		var whiteKingChecked = false;
 		var blackKingChecked = false;
-		var kingCheckedBy;
+		var kingCheckedBy = [];
 		var yText = 0;
 		var wave = 0;
 		var prevButton;
@@ -50,6 +49,8 @@
 		var bp1 = 9, bp2 = 10, bp3 = 11, bp4 = 12, bp5 = 13, bp6 = 14, bp7 = 15, bp8 = 16;
 		var wr1 = 17, wr2 = 18;
 		var br1 = 19, br2 = 20;
+		var wKing = 31;
+		var bKing = 32;
 		
 		var firstMove;
 		
@@ -309,6 +310,7 @@
 		function animate(){
 			requestAnimationFrame(animate);
 			renderer.render(stage);
+			renderer.render(UIcontainer);
 			for (var i=0; i<10; i++){
 				if (typeof richText[i] != "undefined"){
 					//richText[i].rotation -= Math.random();
@@ -428,12 +430,15 @@
 				playerTurn == white ? prevKingButton = blackKingButton : prevKingButton = whiteKingButton;
 				//setup prevButton
 				prevButton = pieceType[currentPiece-1].gridNum;
+				console.log(prevButton)
 				//PAWNS
 				if (pieceType[currentPiece-1].type == 'pawn')
 				{
 					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor  && this.status != -1)
 					{
-						console.log(this);
+						var oldStatus = this.status;
+						var oldColor = this.pieceColor;
+						deletePiece(oldStatus - 1);
 						tempButton = tempButtonSetup (this, prevButton);						
 						temporaryClear(prevButton);
 						
@@ -442,109 +447,18 @@
 							log("Invalid pawn move!");
 							pieceType[currentPiece-1].tint = defaultColor;
 							restoreButton(tempButton, prevButton);
-							buttons[this.gridNum].pieceColor = 2;
+							restorePiece(oldStatus-1);
+							buttons[this.gridNum].pieceColor = oldColor;
+							buttons[this.gridNum].status = oldStatus;
 							currentPiece = 0;
 							pieceMoved = false;
 							return;
 						}
 						else 
 						{
-							restoreButton(tempButton, prevButton);
-						}
-								
-						//if a white pawn is being moved
-						if (pieceType[currentPiece-1].pieceColor == white) {
-							if  ((  this.rowNum == pieceType[currentPiece-1].rowNum - 1 && this.colNum == pieceType[currentPiece-1].colNum
-									&& this.status == 0)
-								|| (this.rowNum == pieceType[currentPiece-1].rowNum - 1 && this.colNum == pieceType[currentPiece-1].colNum - 1
-									&& this.status != 0)
-								|| (this.rowNum == pieceType[currentPiece-1].rowNum - 1 && this.colNum == pieceType[currentPiece-1].colNum + 1
-									&& this.status != 0))
-							{					
-								updatePosition(this);	
-							}
-							 
-							 //check if the pawn attempts to move two spaces on first move
-							 if ((this.rowNum == pieceType[currentPiece-1].rowNum - 2 && pieceType[currentPiece-1].firstMove == true
-									&& this.colNum == pieceType[currentPiece-1].colNum  && this.status == 0)){
-								
-								pieceType[currentPiece-1].doubleMove = true;
-								pieceType[currentPiece-1].doubleMoveTurn = moveCount;
-								updatePosition(this);
-								log("turn double moved: " + pieceType[currentPiece-1].doubleMoveTurn);
-							}
-							//En Passant
-							//En passant left
-							if (pieceType[currentPiece-1].rowNum == 5
-								&& buttons[currentPosition-12].type == 'pawn'
-								&& pieceType[buttons[currentPosition-12].status -1].doubleMove == true
-								&& this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum -1
-								&& (moveCount) - (pieceType[buttons[currentPosition-12].status -1].doubleMoveTurn )== 1){
-								
-								deletePiece(buttons[currentPosition-12].status-1);
-								updatePosition(this);
-							}
-							//En passant right
-							if (pieceType[currentPiece-1].rowNum == 5
-								&& buttons[currentPosition+12].type == 'pawn'
-								&& pieceType[buttons[currentPosition+12].status -1].doubleMove == true
-								&& this.rowNum == pieceType[currentPiece-1].rowNum -1 && this.colNum == pieceType[currentPiece-1].colNum +1
-								&& (moveCount) - (pieceType[buttons[currentPosition+12].status -1].doubleMoveTurn) == 1){
-								
-								deletePiece(buttons[currentPosition+12].status-1);
-								updatePosition(this);
-							}
-						}
-						//otherwise it's a black pawn
-						else
-						{							
-							if  ((  this.rowNum == pieceType[currentPiece-1].rowNum + 1 && this.colNum == pieceType[currentPiece-1].colNum
-									&& this.status == 0)
-								|| (this.rowNum == pieceType[currentPiece-1].rowNum + 1 && this.colNum == pieceType[currentPiece-1].colNum - 1
-									&& this.status != 0)
-								|| (this.rowNum == pieceType[currentPiece-1].rowNum + 1 && this.colNum == pieceType[currentPiece-1].colNum + 1
-									&& this.status != 0)) 
-							{	
-								updatePosition(this);	
-							}
-							//check if pawn attempts to move two spaces on first move
-							if ((this.rowNum == pieceType[currentPiece-1].rowNum + 2 && pieceType[currentPiece-1].firstMove == true
-									&& this.colNum == pieceType[currentPiece-1].colNum  && this.status == 0)){
-									
-								pieceType[currentPiece-1].doubleMove = true;
-								pieceType[currentPiece-1].doubleMoveTurn = moveCount;
-								updatePosition(this);
-							}
-							//En Passant
-							//if (pieceType[buttons[currentPosition-1].status -1] === undefined){pieceType[buttons[currentPosition-12].status -1] = 0;}
-							//En passant left
-							if (pieceType[currentPiece-1].rowNum == 6
-								&& buttons[currentPosition-12].type == 'pawn'
-								&& pieceType[buttons[currentPosition-12].status -1].doubleMove == true
-								&& this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum -1
-								&& (moveCount) - (pieceType[buttons[currentPosition-12].status -1].doubleMoveTurn) ==1){
-								
-								deletePiece(buttons[currentPosition-12].status-1);
-								updatePosition(this);
-							}
-							//En passant right
-							if (pieceType[currentPiece-1].rowNum == 6
-								&& buttons[currentPosition+12].type == 'pawn'
-								&& pieceType[buttons[currentPosition+12].status -1].doubleMove == true
-								&& this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum +1
-								&& (moveCount) - (pieceType[buttons[currentPosition+12].status -1].doubleMoveTurn) == 1){
-								
-								deletePiece(buttons[currentPosition+12].status-1);
-								updatePosition(this);
-							}
+							updatePosition(this, prevButton);
 						}
 					}	
-					
-					pieceType[currentPiece-1].tint = defaultColor;
-					buttons[this.gridNum].pieceColor = 2;
-					currentPiece = 0;
-					pieceMoved = false;
-					return;
 				}
 
 				//ROOKS
@@ -552,7 +466,10 @@
 					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor && this.status != -1){
 						// Legal moves: same column or same row
 						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum){
-							tempButton = tempButtonSetup (this, prevButton);
+							var oldStatus = this.status;
+							var oldColor = this.pieceColor;
+							deletePiece(oldStatus - 1);
+							tempButton = tempButtonSetup (this, prevButton);						
 							temporaryClear(prevButton);
 							
 							if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
@@ -560,15 +477,16 @@
 								log("Invalid rook move!");
 								pieceType[currentPiece-1].tint = defaultColor;
 								restoreButton(tempButton, prevButton);
-								buttons[this.gridNum].pieceColor = 2;
+								restorePiece(oldStatus-1);
+								buttons[this.gridNum].pieceColor = oldColor;
+								buttons[this.gridNum].status = oldStatus
 								currentPiece = 0;
 								pieceMoved = false;
 								return;
 							}
 							else
 							{
-								restoreButton(tempButton, prevButton);
-								updatePosition(this);
+								updatePosition(this, prevButton);
 							}
 						}
 					}
@@ -587,21 +505,26 @@
 						   || (this.rowNum == pieceType[currentPiece-1].rowNum +1 && this.colNum == pieceType[currentPiece-1].colNum +2)
 						   || (this.rowNum == pieceType[currentPiece-1].rowNum +2 && this.colNum == pieceType[currentPiece-1].colNum +1)) 
 						   {
-								tempButton = tempButtonSetup (this, prevButton);
+								var oldStatus = this.status;
+								var oldColor = this.pieceColor;
+								deletePiece(oldStatus - 1);
+								tempButton = tempButtonSetup (this, prevButton);						
 								temporaryClear(prevButton);
+								
 								if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
 								{
 									pieceType[currentPiece-1].tint = defaultColor;
 									restoreButton(tempButton, prevButton);
-									buttons[this.gridNum].pieceColor = 2;
+									restorePiece(oldStatus-1);
+									buttons[this.gridNum].pieceColor = oldColor;
+									buttons[this.gridNum].status = oldStatus;
 									currentPiece = 0;
 									pieceMoved = false;
 									return;
 								}
 								else
 								{
-									restoreButton(tempButton, prevButton);
-									updatePosition(this);
+									updatePosition(this, prevButton);
 								}
 							}
 					}
@@ -616,22 +539,27 @@
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal bottom left
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal top left
 							){
-								tempButton = tempButtonSetup (this, prevButton);
+								var oldStatus = this.status;
+								var oldColor = this.pieceColor;
+								deletePiece(oldStatus - 1);
+								tempButton = tempButtonSetup (this, prevButton);						
 								temporaryClear(prevButton);
+								
 								if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
 								{
 									log("Invalid bishop move!");
 									pieceType[currentPiece-1].tint = defaultColor;
 									restoreButton(tempButton, prevButton);
-									buttons[this.gridNum].pieceColor = 2;
+									restorePiece(oldStatus-1);
+									buttons[this.gridNum].pieceColor = oldColor;
+									buttons[this.gridNum].status = oldStatus;
 									currentPiece = 0;
 									pieceMoved = false;
 									return;
 								}
 								else
 								{
-									restoreButton(tempButton, prevButton);
-									updatePosition(this);
+									updatePosition(this, prevButton);
 								}
 							}
 						}
@@ -647,29 +575,37 @@
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum +i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal bottom left
 								|| (this.rowNum == pieceType[currentPiece-1].rowNum -i && this.colNum == pieceType[currentPiece-1].colNum -i) //permit move diagonal top left
 							){
-								tempButton = tempButtonSetup (this, prevButton);
+								var oldStatus = this.status;
+								var oldColor = this.pieceColor;
+								deletePiece(oldStatus - 1);
+								tempButton = tempButtonSetup (this, prevButton);						
 								temporaryClear(prevButton);
+								
 								if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
 								{
 									log("Invalid queen move!");
 									pieceType[currentPiece-1].tint = defaultColor;
 									restoreButton(tempButton, prevButton);
-									buttons[this.gridNum].pieceColor = 2;
+									restorePiece(oldStatus-1);
+									buttons[this.gridNum].pieceColor = oldColor;
+									buttons[this.gridNum].status = oldStatus;
 									currentPiece = 0;
 									pieceMoved = false;
 									return;
 								}
 								else
 								{
-									restoreButton(tempButton, prevButton);
-									updatePosition(this);
+									updatePosition(this, prevButton);
 								}
 							}
 						}
 						
 						if (pieceType[currentPiece-1].rowNum == this.rowNum || pieceType[currentPiece-1].colNum == this.colNum)
 						{
-							tempButton = tempButtonSetup (this, prevButton);
+							var oldStatus = this.status;
+							var oldColor = this.pieceColor;
+							deletePiece(oldStatus - 1);
+							tempButton = tempButtonSetup (this, prevButton);						
 							temporaryClear(prevButton);
 							
 							if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
@@ -677,15 +613,16 @@
 								log("Invalid queen move!");
 								pieceType[currentPiece-1].tint = defaultColor;
 								restoreButton(tempButton, prevButton);
-								buttons[this.gridNum].pieceColor = 2;
+								restorePiece(oldStatus-1);
+								buttons[this.gridNum].pieceColor = oldColor;
+								buttons[this.gridNum].status = oldStatus;
 								currentPiece = 0;
 								pieceMoved = false;
 								return;
 							}
 							else
 							{
-								restoreButton(tempButton, prevButton);
-								updatePosition(this);
+								updatePosition(this, prevButton);
 							}
 						}
 					}
@@ -706,6 +643,9 @@
 						){
 							
 							pieceType[currentPiece-1].pieceColor == white ? whiteKingButton = this.gridNum : blackKingButton = this.gridNum;
+							var oldStatus = this.status;
+							var oldColor = this.pieceColor;
+							deletePiece(oldStatus - 1);
 							tempButton = tempButtonSetup (this, prevButton);						
 							temporaryClear(prevButton);
 							if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
@@ -713,15 +653,16 @@
 								pieceType[currentPiece-1].pieceColor == white ? whiteKingButton = prevKingButton : blackKingButton = prevKingButton;						
 								pieceType[currentPiece-1].tint = defaultColor;
 								restoreButton(tempButton, prevButton);
-								buttons[this.gridNum].pieceColor = 2;
+								restorePiece(oldStatus-1);
+								buttons[this.gridNum].pieceColor = oldColor;
+								buttons[this.gridNum].status = oldStatus;
 								currentPiece = 0;
 								pieceMoved = false;
 								return;								
 							}
 							else
 							{
-								restoreButton(tempButton, prevButton);
-								updatePosition(this);
+								updatePosition(this, prevButton);
 							}
 						}
 					}
@@ -744,7 +685,7 @@
 							buttons[currentPosition+12].status = wr2;
 							pieceType[wr2-1].firstMove = false;
 							
-							updatePosition(this);
+							updatePosition(this, prevButton);
 						}
 						//Castling white king left
 						if (this.rowNum == pieceType[wr1-1].rowNum +0 && this.colNum == pieceType[currentPiece-1].colNum -2
@@ -762,7 +703,7 @@
 							buttons[currentPosition-(12)].status = wr1;
 							pieceType[wr1-1].firstMove = false;
 							
-							updatePosition(this);
+							updatePosition(this, prevButton);
 						}
 						//Castling black king right
 						if (this.rowNum == pieceType[br2-1].rowNum +0 && this.colNum == pieceType[currentPiece-1].colNum +2
@@ -780,7 +721,7 @@
 							buttons[currentPosition+12].status = br2;
 							pieceType[wr2-1].firstMove = false;
 							
-							updatePosition(this);
+							updatePosition(this, prevButton);
 						}
 						//Castling black king left
 						if (this.rowNum == pieceType[br1-1].rowNum +0 && this.colNum == pieceType[currentPiece-1].colNum -2
@@ -798,7 +739,7 @@
 							buttons[currentPosition-(12)].status = br1;
 							pieceType[br1-1].firstMove = false;
 							
-							updatePosition(this);
+							updatePosition(this, prevButton);
 						}
 					}
 				}
@@ -809,15 +750,30 @@
 				pieceType[currentPiece-1].tint = defaultColor;
 				
 				//move is finished, check if King is checked
-				
-				//checkKing();
 				//alternate player turns
+				if (debugMode && this.pieceColor == white)
+					playerTurn = white;
+				if (debugMode && this.pieceColor == black)
+					playerTurn = black;
+					
 				if (playerTurn == white && pieceMoved == true)
 				{
-					if (whiteKingChecked == true)
+					console.log("turn = white and piece moved, calling pieceUnderAttack");
+					checkedKing = pieceUnderAttack (black, blackKingButton);
+					console.log("CheckedKing: " + checkedKing[0] + " " + checkedKing[1]);
+					if (checkedKing[0] == true && checkedKing[1] == black)
 					{
-						console.log("Black wins!");
+						blackKingChecked = true;
+						if (checkmate(black))
+						{
+							console.log("White wins!");
+						}
 					}
+					else
+					{
+						blackKingChecked = false;
+					}
+				
 					playerTurn = black;
 					currentPiece = 0;
 					console.log("blackKingChecked?: " + blackKingChecked);
@@ -825,21 +781,22 @@
 				}
 				if (playerTurn == black && pieceMoved == true)
 				{
-					checkedKing = kingChecked(white);
+					console.log("turn = black and piece moved, calling pieceUnderAttack");
+					checkedKing = pieceUnderAttack (white, whiteKingButton);
 					if (checkedKing[0] == true && checkedKing[1] == white)
 					{
 						whiteKingChecked = true;
+						if (checkmate(white))
+						{
+							console.log("Black wins!");
+						}
 					}
 					else
 					{
-						
 						whiteKingChecked = false;
 					}
 					
-					if (blackKingChecked == true)
-					{
-						console.log("White wins!");
-					}
+					
 					playerTurn = white;
 					currentPiece = 0;
 					console.log("whiteKingChecked?: " + whiteKingChecked);
