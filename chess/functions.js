@@ -1,5 +1,5 @@
 //Remove child function
-		
+	
 function deletePiece(index) {
 	stage.removeChild(pieces[index]);
 }
@@ -23,20 +23,36 @@ function validMove(piece, capture, pieceType)
 	var moveValid = true;
 			
 	oldColor == white ? kingButton = whiteKingButton : kingButton = blackKingButton;
-	console.log("OLDCOLOR IN VALID MOVE: " + oldColor);
+
 	switch (pieceType){
 		
 		case "pawn":
 			//Check if the pawn is actually moving 1 spot instead of 2 when a piece is in front it
 			if (checkPawn(piece, capture))
+			{
 				moveValid = true;
+				//After the pawn function has decided that the pawn's move is valid
+				//Go ahead and delete the previous button and assign the pawn to the new button
+				
+				//We need pieceColor? because all the other cases assume the move is valid and 
+				//use oldColor, refering to the spot the piece is capturing
+				//Since the pawn hasn't changed any button values we need to use the spot the pawn
+				//was previously at to check the color
+				pieceColor == white ? kingButton = whiteKingButton : kingButton = blackKingButton;
+				tempButton = tempButtonSetup (capture, prevButton);
+				temporaryClear(prevButton);
+			}
 			else
+			{
 				moveValid = false;
+				return moveValid;
+			}
 			
 			//in these cases we want to check if moving puts the king in check
 			console.log("Old color: " + pieceColor);
-			checkedKing = pieceUnderAttack(oldColor, kingButton);
-			if (checkedKing[0] == true && checkedKing[1] == oldColor)
+			checkedKing = pieceUnderAttack(pieceColor, kingButton);
+			console.log(checkedKing);
+			if (checkedKing[0] == true && checkedKing[1] == pieceColor)
 			{
 				moveValid = false;
 			}
@@ -297,22 +313,7 @@ function checkPawn (piece, capture)
 	var pieceColor = buttons[pieceCol * 12 + pieceRow].pieceColor;
 	var currentPosition = pieceCol * 12 + pieceRow;
 	var nextPosition = captureCol * 12 + captureRow;
-	//If it is the pawns first move it can move 2 spots
-	/*if (pieceType[pieceIndex].firstMove == true)
-	{
-		maxMovement = 2;
-	}
-	*/
-	//If it's a black pawn moving down we need to subtract
 
-	
-	console.log("movement: " + (movement));
-	console.log("First move: " + pieceType[currentPiece-1].firstMove);
-	console.log("pieceRow: " + pieceRow);
-	console.log("captureRow: " + captureRow);
-	console.log("pieceColor: " + pieceColor);
-	
-		
 	if (pieceColor == white && movement < 0)
 	{
 		console.log("White pawn tried moving backwards");
@@ -355,14 +356,9 @@ function checkPawn (piece, capture)
 	}
 
 	movement = Math.abs(movement);
-	console.log("Movement before en passant: "+ movement);
 	
 	//En passant rules
 	
-	console.log("Rule 4: " + piece.rowNum + " " + movement);
-	console.log("captureCol: " + captureCol);
-	console.log("piece.col: " + piece.colNum);
-	console.log("Rule 5: " + (piece.colNum + movement));
 	if (typeof pieceType[buttons[currentPosition-12].status - 1] != "undefined")
 	{
 		console.log("Rule 6: " + moveCount + " - " + pieceType[buttons[currentPosition-12].status - 1].doubleMoveTurn);
@@ -385,6 +381,7 @@ function checkPawn (piece, capture)
 				{
 					console.log("currentPosition-12 color" + buttons[currentPosition-12].pieceColor);
 					console.log("first if ");
+					deletePiece(buttons[currentPosition-12].status -1);
 					return true;
 				}
 			}
@@ -396,6 +393,7 @@ function checkPawn (piece, capture)
 				&& buttons[currentPosition-12].pieceColor != pieceColor
 				&& ((moveCount - (pieceType[buttons[currentPosition-12].status - 1].doubleMoveTurn)) == 1))
 				{
+					deletePiece(buttons[currentPosition-12].status - 1);
 					console.log("second if ");
 					return true;
 				}
@@ -413,6 +411,7 @@ function checkPawn (piece, capture)
 					&& ((moveCount - (pieceType[buttons[currentPosition+12].status - 1].doubleMoveTurn)) == 1))
 					{
 						console.log("third if ");
+						deletePiece(buttons[currentPosition+12].status-1);
 						return true;
 					}
 			}
@@ -424,6 +423,7 @@ function checkPawn (piece, capture)
 				&& buttons[currentPosition+12].pieceColor != pieceColor
 				&& ((moveCount - (pieceType[buttons[currentPosition+12].status - 1].doubleMoveTurn)) == 1))
 				{
+					deletePiece(buttons[currentPosition+12].status-1);
 					console.log("fourth if ");
 					return true;
 				}
@@ -436,22 +436,17 @@ function checkPawn (piece, capture)
 	if (pieceColor == black)
 		movement = -(movement);
 	
-		
-	console.log("New movement: " + movement);
-	console.log("capture status: " + capture.status);
-	if (capture.rowNum == pieceType[currentPiece-1].rowNum - movement && capture.colNum == pieceType[currentPiece-1].colNum - movement && capture.status == 0
-	|| (capture.rowNum == pieceType[currentPiece-1].rowNum - movement && capture.colNum == pieceType[currentPiece-1].colNum + movement && capture.status == 0))
+	//Disallow moving 1 diag left or right if no piece to capture
+	if (Math.abs(captureCol - pieceCol) == 1)
 	{
-		console.log("long rule: " );
-		return false;
+		console.log("Pawn capture color: " + capture.pieceColor);
+		console.log("Piece color: " + pieceColor);
+		if (capture.status == 0 || capture.pieceColor == pieceColor)
+		{
+			console.log("NO DIAG MOVEMENT ALLOWED!");
+			return false;
+		}
 	}
-	if (pieceRow == (captureRow - movement) && capture.status != pieceType[currentPiece-1].status)
-	{
-		console.log("cannot move there");
-		return false;
-	}
-
-	
 	if (pieceType[currentPiece-1].firstMove == true)
 		pieceType[currentPiece-1].firstMove = false;
 	
@@ -461,7 +456,15 @@ function checkPawn (piece, capture)
 		pieceType[currentPiece-1].doubleMoveTurn = moveCount;
 	}
 	
-	console.log("currnetPiece.doubleMove: " + pieceType[currentPiece-1].doubleMove);
+	//If the pawn is moving up or down 1 row in the same column 
+	if (Math.abs(pieceRow - captureRow) == 1 && pieceCol == captureCol)
+	{
+		if (capture.status != 0)
+		{
+			console.log("Can't move up");
+			return false;			
+		}
+	}
 	console.log("Returning true in pawn");
 	return true;
 }
@@ -469,24 +472,15 @@ function checkPawn (piece, capture)
 //Check if a piece is currently capturable
 function pieceUnderAttack(pieceColor, piecePosition)
 {	
-	//In order to check if a king is in check, for most pieces we only need to check
-	//the open spots near a king. If the only open spot by a king is 1 square above it
-	//then we only need to check if a piece is attacking from there, while also checking
-	//knights since they can jump pieces
-	
-	
-	//pieceColor == white ? piecePosition = whitepiecePosition : piecePosition = blackpiecePosition;
-	
 	var nearbySquares;
 	var capturable = [];
 	var pieceIsKing = false;
 	kingCheckedBy = [];
 	
-	console.log(piecePosition);
+	//Find out if the piece we are checking is a king to save data in case the king is actually in check
 	if (buttons[piecePosition].type == 'king')
 		pieceIsKing = true;
-	//console.log(buttons[piecePosition].type);
-	//pieceColor == white ? nearbySquares = findNearbySquares(whitepiecePosition) : nearbySquares = findNearbySquares(blackpiecePosition);
+	
 	nearbySquares = findNearbySquares(piecePosition);
 	
 	//Now that we have the empty squares around the king simply follow them
@@ -494,7 +488,6 @@ function pieceUnderAttack(pieceColor, piecePosition)
 	pieceColor == white ? opponentColor = black : opponentColor = white;
 	console.log("pUA pieceColor: " + pieceColor);
 	console.log("pUA opp color: " + opponentColor);
-	//console.log("piecePosition: " + piecePosition);
 	for (i = 0; i < nearbySquares.length; i++)
 	{
 		//console.log(buttons[nearbySquares[i][0]].status);
@@ -505,10 +498,10 @@ function pieceUnderAttack(pieceColor, piecePosition)
 			//The buttons array to see if the status is equal to a black pawn
 			if (buttons[nearbySquares[i][0]].status >= (bp1) && buttons[nearbySquares[i][0]].status <= (bp8) && pieceColor == white)
 			{
-				log("white king checked by a blackpawn, diag left up");
+				log("Attacked by blackpawn, diag left up");
 				capturable.push(true);
 				capturable.push(pieceColor);
-				
+				capturable.push(piecePosition);
 				if (pieceIsKing)
 				{
 					kingCheckedBy.push("pawn");					
@@ -528,7 +521,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					console.log("King up left");
 					capturable.push(true);
 					capturable.push(pieceColor);
-					
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -559,8 +552,8 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					capturable.push(true);
 					pieceColor == white ? pieceColor = white : pieceColor = black;
 					capturable.push(pieceColor);
-					
-					log("bishop || queen");
+					capturable.push(j);
+					log("Attacked by bishop || queen, diagonal left up");
 					
 					if (pieceIsKing)
 					{
@@ -587,7 +580,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					console.log("King left");
 					capturable.push(true);
 					capturable.push(pieceColor);
-					
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -615,11 +608,11 @@ function pieceUnderAttack(pieceColor, piecePosition)
 				
 				if ((buttons[j].type == 'rook' || buttons[j].type == 'queen') &&  buttons[piecePosition].pieceColor != buttons[j].pieceColor)
 				{
-					log("LEFT ROOK || QUEEN");
+					log("Attacked by Rook || Queen, left");
 					capturable.push(true);
 					pieceColor == white ? pieceColor = white : pieceColor = black;
 					capturable.push(pieceColor);
-
+					capturable.push(j);
 					if(pieceIsKing)
 					{						
 						buttons[j].type == 'rook' ? type = 'rook' : type = 'queen';
@@ -641,11 +634,11 @@ function pieceUnderAttack(pieceColor, piecePosition)
 			
 			if (buttons[nearbySquares[i][0]].status >= (wp1) && buttons[nearbySquares[i][0]].status <= (wp8) && pieceColor == black)
 			{
-				console.log("black king checked by a blackpawn, diag left down");
+				console.log("Attacked by white pawn, diag left down");
 				console.log(buttons[nearbySquares[i][0]].status);
 				capturable.push(true);
 				capturable.push(pieceColor);
-				
+				capturable.push(piecePosition);
 				if (pieceIsKing)
 				{
 					kingCheckedBy.push("pawn");
@@ -665,7 +658,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					console.log("King down left");
 					capturable.push(true);
 					capturable.push(pieceColor);
-					
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -695,7 +688,8 @@ function pieceUnderAttack(pieceColor, piecePosition)
 				{
 					capturable.push(true);
 					capturable.push(pieceColor);
-					log("bishop || queen");
+					capturable.push(j);
+					log("Attacked by Bishop || Queen, diag left down");
 					
 					if (pieceIsKing)
 					{
@@ -721,7 +715,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					console.log("King up");
 					capturable.push(true);
 					capturable.push(pieceColor);
-					
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -749,7 +743,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					log("UP ROOK || QUEEN");
 					capturable.push(true);
 					capturable.push(pieceColor);
-
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						buttons[j].type == 'rook' ? type = 'rook' : type = 'queen';
@@ -774,7 +768,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					console.log("King down");
 					capturable.push(true);
 					capturable.push(pieceColor);
-					
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -801,7 +795,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					log("DOWN ROOK || QUEEN");
 					capturable.push(true);
 					capturable.push(pieceColor);
-
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						buttons[j].type == 'rook' ? type = 'rook' : type = 'queen';
@@ -822,7 +816,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 				log("white king checked by a blackpawn, diag right up");
 				capturable.push(true);
 				capturable.push(pieceColor);
-				
+				//capturable.push(j);
 				if (pieceIsKing)
 				{
 					kingCheckedBy.push("pawn");					
@@ -840,7 +834,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					console.log("King diag right up");
 					capturable.push(true);
 					capturable.push(pieceColor);
-					
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -866,6 +860,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 				{
 					capturable.push(true);
 					capturable.push(pieceColor);
+					capturable.push(j);
 					log("DIAGRIGHT BISHOP || QUEEN");
 					
 					if (pieceIsKing)
@@ -890,7 +885,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					console.log("King right");
 					capturable.push(true);
 					capturable.push(pieceColor);
-					
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -918,7 +913,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					log("LEFT ROOK || QUEEN");
 					capturable.push(true);
 					capturable.push(pieceColor);
-
+					capturable.push(j);
 					if (pieceIsKing)
 					{						
 						buttons[j].type == 'rook' ? type = 'rook' : type = 'queen';
@@ -939,7 +934,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 				log("black king checked by a blackpawn, diag right down");
 				capturable.push(true);
 				capturable.push(pieceColor);
-				
+				capturable.push(piecePosition);
 				if (pieceIsKing)
 				{
 					kingCheckedBy.push('pawn');
@@ -967,7 +962,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					console.log("King down right");
 					capturable.push(true);
 					capturable.push(pieceColor);
-					
+					capturable.push(j);
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -983,6 +978,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 				{
 					capturable.push(true);
 					capturable.push(pieceColor);
+					capturable.push(j);
 					log("DIAGRIGHT BISHOP || QUEEN");
 					
 					if (pieceIsKing)
@@ -1010,7 +1006,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 			capturable.push(true);
 			log("CHECKED BY KNIGHT");
 			capturable.push(pieceColor);
-					
+			capturable.push(j);		
 			if (pieceIsKing)
 			{
 				kingCheckedBy.push('knight');
@@ -1175,6 +1171,14 @@ function keyPressed (event)
 			}
 		}
 	}
+	
+	if (event.keyCode == 46)
+	{
+		var pos = pieces[currentPiece-1].colNum*12 + pieces[currentPiece-1].rowNum;
+		temporaryClear(pos);
+		deletePiece(pieces[currentPiece-1].status-1);
+		currentPiece = 0;
+	}
 }
 		
 function updatePosition (buttonSelected, prevButton)
@@ -1191,10 +1195,24 @@ function updatePosition (buttonSelected, prevButton)
 }
 
 function textUpdate(buttonSelected){
+	if (richText.length > 15)
+	{
+		UIstage.removeChild(richText[0]);
+		richText.shift();
+		
+		for (var i = 0; i < richText.length; i++)
+		{
+			richText[i].position.y -= 16;
+		}
+		
+		yText = 240;
+	}
+	
 	var Col;
 	if (typeof richText != "undefined") {
 		stage.removeChild(richText);
 	}
+	
 	var style = {
 		font : 'bold 18px Arial',
 		fill : '#F7EDCA',
@@ -1241,6 +1259,46 @@ function textUpdate(buttonSelected){
 	UIstage.addChild(rText);	
 }
 
+function checkText (color, enemyColor, check)
+{
+	if (richText.length > 16)
+	{
+		richText.shift();
+	}
+	var style = {
+		font : 'bold 18px Arial',
+		fill : '#F7EDCA',
+		stroke : '#4a1850',
+		strokeThickness : 2,
+		dropShadow : false,
+		dropShadowColor : '#000000',
+		dropShadowAngle : Math.PI / 6,
+		dropShadowDistance : 6,
+		wordWrap : true,
+		wordWrapWidth : 440
+	};
+	
+	if (color == white)
+	{
+		if (check == 'Checkmate')
+			rText = new PIXI.Text('White has checkmated Black!', style);	
+		else
+			rText = new PIXI.Text('White has put Black in check!', style);
+	}
+	else
+	{
+		if (check == 'Checkmate')
+			rText = new PIXI.Text('Black has checkmated White!', style);	
+		else
+			rText = new PIXI.Text('Black has put White in check!', style);
+	}
+	
+	rText.y = yText;
+	yText+= 16;
+	richText.push(rText);
+	UIstage.addChild(rText);
+}
+	
 function temporaryClear (oldPosition)
 {
 	console.log("CLEARING BUTTON AT POSITION: " + oldPosition);
@@ -1285,19 +1343,28 @@ function checkmate (pieceColor)
 {
 	pieceColor == white ? nearbySquares = findNearbySquares(whiteKingButton) : nearbySquares = findNearbySquares(blackKingButton);
 	console.log(kingCheckedBy);
+	
+	//We need to save the current kingCheckedBy data because subsequent calls to the pieceUnderAttack function
+	//will overwrite kingCheckedBy
 	savedKingCheckedBy = kingCheckedBy;
 	//kingCheckedBy stores the piece type, position, and color of the piece that is attacking the king
 	//From that spot we need to see if it's possible to either: block the attacking piece, capture it, or move the king
 	
+	//savedKingCheckedBy[0] = the piece that is attacking the king
+	//savedKingCheckedBy[1] = the button that piece is on
+	//savedKingCheckedBy[2] = the direction that piece is attacking from
+	
 	var kingPosition;
 	pieceColor == white ? kingPosition = whiteKingButton : kingPosition = blackKingButton;
+	
+	console.log("kingPosition: " + kingPosition);
 	//set the opponentColor so we know what side the attacking piece is on
 	var opponentColor;
 	pieceColor == white ? opponentColor = black : opponentColor = white;
-	console.log("Opponent Color: " + opponentColor);
+	
 	var subtractValue = 0;
-	//kingCheckedBy[2] contains the direction the attacking piece is in relation to the king
 	var scanStart;
+	
 	switch(savedKingCheckedBy[2])
 	{
 		case "Diagonal left up":
@@ -1341,24 +1408,48 @@ function checkmate (pieceColor)
 			break;
 		
 		case "Knight":
-			var knightSquares = [piecePosition-14, piecePosition-25, piecePosition-23, piecePosition-10,
-								 piecePosition+14, piecePosition+25, piecePosition+23, piecePosition+10];
+			var knightSquares = [savedKingCheckedBy[1]-14, savedKingCheckedBy[1]-25, savedKingCheckedBy[1]-23, savedKingCheckedBy[1]-10,
+								 savedKingCheckedBy[1]+14, savedKingCheckedBy[1]+25, savedKingCheckedBy[1]+23, savedKingCheckedBy[1]+10];
 	}
+	
+	console.log("ScanStart = " + scanStart);
+	console.log("Subtract Value = " + subtractValue);
 	
 	//First check if a piece can capture the attacking piece
 	//savedKingCheckedBy[1] contains the position of the piece attacking the king
+	
+	//var capturable = pieceUnderAttack(pieceColor, savedKingCheckedBy[1]);
 	var capturable = pieceUnderAttack(opponentColor, savedKingCheckedBy[1]);
-	console.log("capturable returns: " + capturable[0] + "  " + capturable[1]);
+	console.log("capturable returns: " + capturable[0] + "  " + capturable[1] + " " + capturable[2]);
 	if (capturable[0] == true)
 	{
-		kingCapturable = pieceUnderAttack(pieceColor, savedKingCheckedBy[1]);
-		
 		//If taking the attacking piece does NOT result in putting yourself in check
+		
+		var tempButton = [];
+		//squareBlockable[2] contains the spot of the piece we want to move now
+		var prevButton = capturable[2];
+
+		tempButton.push(buttons[prevButton].status);
+		tempButton.push(buttons[prevButton].type);
+		tempButton.push(buttons[prevButton].pieceColor);
+		
+		//Then clear the button where the piece was to see if moving it will put the king in check
+		temporaryClear(prevButton);
+		
+		kingCapturable = pieceUnderAttack(pieceColor, savedKingCheckedBy[1]);
+		console.log(kingCapturable);
+				
 		//return false to indicate checkmate is equal to false
 		if (kingCapturable[0] == false)
+		{
+			restoreButton(tempButton, prevButton);
 			return false;
+		}
 		else
+		{
 			console.log("Piece is NOT capturable safely");
+			restoreButton(tempButton, prevButton);
+		}
 	}
 
 	//If we are using the king as the starting point for our for loop just use piecePosition
@@ -1366,11 +1457,6 @@ function checkmate (pieceColor)
 	//Or else use the position of the attacking piece stored in savedKingCheckedBy[1]
 	scanStart == "King Piece" ? i = kingPosition : i = savedKingCheckedBy[1];
 	scanStart == "King Piece" ? scanEnd = savedKingCheckedBy[1] : scanEnd = kingPosition;
-	
-	//-------------CAPTURABLE DONE---------------------//
-	//-------------NEED SQUARES BLOCKABLE---------------//
-	//-------------KING MOVABLE DONE----------//
-	//-----------NEED MULTIPLE KingCheckedBy for each piece putting the king in check
 	
 	if (kingCanMove(pieceColor, kingPosition))
 	{
@@ -1382,6 +1468,8 @@ function checkmate (pieceColor)
 		console.log("King can NOT move out of check safely");
 	}
 	
+	if (savedKingCheckedBy[2] != "Knight")
+	{
 	//By using subtractValue we will only check squares in between the king and the attacking piece
 	for (i -= subtractValue; i > scanEnd; i -= subtractValue)
 	{
@@ -1389,20 +1477,65 @@ function checkmate (pieceColor)
 		//for each square in between the king and the attacking piece check if the king can move a piece there
 		console.log("square " + i + " in between king and attacking piece");
 		
-		//Call pieceUnderAttack with opponentColor to see if a piece of the opposite color can 
-		//move to square i
+		//Call pieceUnderAttack with pieceColor to see if a piece can move to square i
 		squareBlockable = pieceUnderAttack(opponentColor, i);
-		if (squareBlockable[0] && !pieceUnderAttack(pieceColor, i))
+		console.log(squareBlockable);
+		//Since pieceUnderAttack only checks a pieces capture rules it would never allow a pawn
+		//to simply move up 1 to block a piece from attacking
+		//So instead do that check here
+		if (buttons[i-1].pieceColor == pieceColor && buttons[i-1].type == 'pawn'
+		 || buttons[i+1].pieceColor == pieceColor && buttons[i+1].type == 'pawn')
 		{
-			console.log("King can move a piece to square " + i + " to get out of check");
+			console.log("Pawn can move to square " + i + " to get out of check");
 			return false;
+		}
+		
+		if (buttons[i-13].pieceColor == pieceColor && buttons[i-13].type == 'pawn'
+	     || buttons[i+13].pieceColor == pieceColor && buttons[i+13].type == 'pawn'
+		 || buttons[i-11].pieceColor == pieceColor && buttons[i-11].type == 'pawn'
+		 || buttons[i+11].pieceColor == pieceColor && buttons[i+11].type == 'pawn'
+		 )
+			continue;
+		
+		//pieceUnderAttack will also think a pawn can move diagonally to block
+		//so discard this move if a player tries it
+		
+		
+		//if (squareBlockable[0] && !pieceUnderAttack(pieceColor, kingPosition))
+		console.log("In blockable squareBlockable[2]: " + squareBlockable[2]);
+		if (squareBlockable[0])
+		{
+			//Now check if we do move the  piece to block, does it put us in check again?
+			//First save the data at the current position we are moving from
+			var tempButton = [];
+			//squareBlockable[2] contains the spot of the piece we want to move now
+			var prevButton = squareBlockable[2];
+			
+			tempButton.push(buttons[prevButton].status);
+			tempButton.push(buttons[prevButton].type);
+			tempButton.push(buttons[prevButton].pieceColor);
+			
+			//Then clear the button where the piece was to see if moving it will put the king in check
+			temporaryClear(prevButton);
+			if (!pieceUnderAttack(pieceColor, kingPosition))
+			{
+				//Restore the button after checking
+				restoreButton(tempButton, prevButton);
+				console.log("King can move a piece to square " + i + " to get out of check");
+				
+				return false;
+			}
+			restoreButton(tempButton, prevButton);
 		}
 		else
 		{
 			console.log("King cannot move a piece to block");
 		}
-		//From here we need to check if the king has a piece that can move to this square
+
 	}
+	}
+	
+	
 	return true;
 }
 
@@ -1410,13 +1543,10 @@ function kingCanMove (pieceColor, kingPosition)
 {
 	var kingCapturable;
 	var oldData = [];
-	console.log("King can move color: " + pieceColor);
-	console.log("*     *    *  position: " + kingPosition);
 	oldData.push(buttons[kingPosition].status);
 	oldData.push(buttons[kingPosition].pieceColor);
 	oldData.push(buttons[kingPosition].type);
 	
-	//tempButton = tempButtonSetup (buttons[kingPosition], prevButton);
 	temporaryClear(kingPosition);
 						
 	//can king move diag left up
@@ -1506,13 +1636,4 @@ function kingCanMove (pieceColor, kingPosition)
 	//If the king cannot move restore it
 	restoreButton(oldData, kingPosition);
 	return false;
-}
-
-function buttonBlockable(pieceColor, buttonPosition)
-{
-	//call pieceUnderAttack with opposite color?
-	//If I want to see if white can move a piece to buttonPosition - 1;
-	//I should be able to call pieceUnderAttack(black) to use its logically
-	//to see if a white piece can move to that square and it will return true
-	//if possible
 }
