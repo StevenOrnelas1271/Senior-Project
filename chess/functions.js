@@ -1146,7 +1146,6 @@ function keyPressed (event)
 		stage.addChild(pieceType[currentPiece-1]);
 		pieces.push(pieceType[currentPiece-1]);
 	}
-	
 	//if 'r' is pressed
 	//rotate the game board
 	var xShift = 480, yShift = 576;
@@ -1156,8 +1155,13 @@ function keyPressed (event)
 			stage.position.x += xShift;
 			stage.position.y += yShift;
 			boardRotate = true;
+			//rotate game pieces
 			for (var i = 0; i < numPieces; i++){
 				pieces[i].rotation += Math.PI;
+			}
+			//rotate grid markers
+			for (var i = 0; i < 16; i++){
+				gridMarks[i].rotation += Math.PI;
 			}
 			return;
 		}
@@ -1169,6 +1173,9 @@ function keyPressed (event)
 			for (var i = 0; i < numPieces; i++){
 				pieces[i].rotation += Math.PI;
 			}
+			for (var i = 0; i < 16; i++){
+				gridMarks[i].rotation += Math.PI;
+			}
 		}
 	}
 	
@@ -1179,6 +1186,41 @@ function keyPressed (event)
 		deletePiece(pieces[currentPiece-1].status-1);
 		currentPiece = 0;
 	}
+}
+
+function boardRotation(){
+	//rotate the game board
+	var xShift = 480, yShift = 576;
+	//if (event.keyCode == 82){
+		if (boardRotate == false){
+			stage.rotation += Math.PI;
+			stage.position.x += xShift;
+			stage.position.y += yShift;
+			boardRotate = true;
+			//rotate game pieces
+			for (var i = 0; i < numPieces; i++){
+				pieces[i].rotation += Math.PI;
+			}
+			//rotate grid markers
+			for (var i = 0; i < 16; i++){
+				gridMarks[i].rotation += Math.PI;
+			}
+			return;
+		}
+		if (boardRotate == true){
+			stage.rotation += Math.PI;
+			stage.position.x -= xShift;
+			stage.position.y -= yShift;
+			boardRotate = false;
+			for (var i = 0; i < numPieces; i++){
+				pieces[i].rotation += Math.PI;
+			}
+			for (var i = 0; i < 16; i++){
+				gridMarks[i].rotation += Math.PI;
+			}
+		}
+	//}
+	
 }
 		
 function updatePosition (buttonSelected, prevButton)
@@ -1214,7 +1256,7 @@ function textUpdate(buttonSelected){
 	}
 	
 	var style = {
-		font : 'bold 18px Arial',
+		font : 'bold 16px Arial',
 		fill : '#F7EDCA',
 		stroke : '#4a1850',
 		strokeThickness : 2,
@@ -1252,18 +1294,157 @@ function textUpdate(buttonSelected){
 	rText = new PIXI.Text(color  + ' '  + pieces[currentPiece-1].type
 								+ ' '   + Col1 + (10-pieces[currentPiece-1].rowNum)
 								+' to ' + Col2 +	(10-buttonSelected.rowNum),style);
-	//rText.x = 500;
+	rText.x = 8;
 	rText.y = yText;
-	yText+= 16;
+	yText+= 18;
 	richText.push(rText);
 	UIstage.addChild(rText);	
 }
 
+function addCoordinateMarkers(){
+
+
+	//Gridspace indicators	
+	var markerStyle = {
+		font : 'bold 18px Calibri',
+		fill : '#F7EDCA',
+		stroke : '#000000',
+		strokeThickness : 5,
+		dropShadow : true,
+		dropShadowColor :'#000000',
+		dropShadowAngle : Math.PI / 6,
+		dropShadowDistance : 6,
+		wordWrap : true,
+		wordWrapWidth : 440
+	};
+	// Lettered Rows
+	gridMark = new PIXI.Text('A',markerStyle);
+	gridMark.x = buttons[22].position.x;
+	gridMark.y = buttons[22].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('B',markerStyle);
+	gridMark.x = buttons[34].position.x;
+	gridMark.y = buttons[34].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+		
+	var gridMark = new PIXI.Text('C',markerStyle);
+	gridMark.x = buttons[46].position.x;
+	gridMark.y = buttons[46].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('D',markerStyle);
+	gridMark.x = buttons[58].position.x;
+	gridMark.y = buttons[58].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('E',markerStyle);
+	gridMark.x = buttons[70].position.x;
+	gridMark.y = buttons[70].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('F',markerStyle);
+	gridMark.x = buttons[82].position.x;
+	gridMark.y = buttons[82].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('G',markerStyle);
+	gridMark.x = buttons[94].position.x;
+	gridMark.y = buttons[94].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('H',markerStyle);
+	gridMark.x = buttons[106].position.x;
+	gridMark.y = buttons[106].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	//Numbered Columns
+	var gridMark = new PIXI.Text('1',markerStyle);
+	gridMark.x = buttons[9].position.x;
+	gridMark.y = buttons[9].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('2',markerStyle);
+	gridMark.x = buttons[8].position.x;
+	gridMark.y = buttons[8].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('3',markerStyle);
+	gridMark.x = buttons[7].position.x;
+	gridMark.y = buttons[7].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('4',markerStyle);
+	gridMark.x = buttons[6].position.x;
+	gridMark.y = buttons[6].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('5',markerStyle);
+	gridMark.x = buttons[5].position.x;
+	gridMark.y = buttons[5].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('6',markerStyle);
+	gridMark.x = buttons[4].position.x;
+	gridMark.y = buttons[4].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('7',markerStyle);
+	gridMark.x = buttons[3].position.x;
+	gridMark.y = buttons[3].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+	
+	var gridMark = new PIXI.Text('8',markerStyle);
+	gridMark.x = buttons[2].position.x;
+	gridMark.y = buttons[2].position.y;
+	gridMark.anchor.set(0.5);
+	gridMarks.push(gridMark);
+	stage.addChild(gridMark);
+}
+
 function checkText (color, enemyColor, check)
 {
-	if (richText.length > 16)
+	if (richText.length > 15)
 	{
+		UIstage.removeChild(richText[0]);
 		richText.shift();
+		
+		for (var i = 0; i < richText.length; i++)
+		{
+			richText[i].position.y -= 16;
+		}
+		
+		yText = 240;
 	}
 	var style = {
 		font : 'bold 18px Arial',
@@ -1352,7 +1533,7 @@ function checkmate (pieceColor)
 	
 	//savedKingCheckedBy[0] = the piece that is attacking the king
 	//savedKingCheckedBy[1] = the button that piece is on
-	//savedKingCheckedBy[2] = the direction that piece is attacking from
+	//savedKingCheckedBy[2] = the direction that piece is attacking rom
 	
 	var kingPosition;
 	pieceColor == white ? kingPosition = whiteKingButton : kingPosition = blackKingButton;
