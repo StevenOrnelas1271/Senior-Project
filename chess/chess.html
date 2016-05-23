@@ -50,6 +50,7 @@
 		var prevButton;
 		var prevKingButton = 0;
 		var tempButton = [];
+		var nextButtonData = [];
 		var boardRotate = false;
 		
 		
@@ -344,7 +345,6 @@
 			requestAnimationFrame(animate);
 			UIrenderer.render(UIstage);
 			renderer.render(stage);
-			renderer.render(UIcontainer);
 			for (var i=0; i<10; i++){
 				if (typeof richText[i] != "undefined"){
 					//richText[i].rotation -= Math.random();
@@ -470,28 +470,37 @@
 				{
 					if (this.status == 0 || this.pieceColor != pieceType[currentPiece-1].pieceColor  && this.status != -1)
 					{
-						var oldStatus = this.status;
-						var oldColor = this.pieceColor;
-						deletePiece(oldStatus - 1);
-						tempButton = tempButtonSetup (this, prevButton);						
-						temporaryClear(prevButton);
+						var oldStatus = pieceType[currentPiece-1].status;
+						var oldColor = pieceType[currentPiece-1].pieceColor;
+						var oldType = pieceType[currentPiece-1].type;
+						nextButtonData.push(this.status);
+						nextButtonData.push(buttons[this.gridNum].pieceColor);
+						deletePiece(nextButtonData[0] - 1);
 						
 						if (!validMove(pieceType[currentPiece-1], this, pieceType[currentPiece-1].type))
 						{
 							log("Invalid pawn move!");
 							pieceType[currentPiece-1].tint = defaultColor;
-							restoreButton(tempButton, prevButton);
-							restorePiece(oldStatus-1);
-							buttons[this.gridNum].pieceColor = oldColor;
-							buttons[this.gridNum].status = oldStatus;
+
+							buttons[this.gridNum].pieceColor = nextButtonData[1];
+							buttons[this.gridNum].status = nextButtonData[0];
+							restorePiece(nextButtonData[0]-1);
+							
+							buttons[prevButton].status = oldStatus;
+							buttons[prevButton].pieceColor = oldColor;
+							buttons[prevButton].type = oldType;
+							
 							currentPiece = 0;
 							pieceMoved = false;
+							nextButtonData = [];
 							return;
 						}
 						else 
 						{
 							updatePosition(this, prevButton);
 						}
+						
+						nextButtonData = [];
 					}	
 				}
 
@@ -714,6 +723,9 @@
 								pieceMoved = false;
 								return;
 							}
+							
+							//update king position
+							pieceType[currentPiece-1].pieceColor == white ? whiteKingButton = this.gridNum : blackKingButton = this.gridNum;
 							//update white rook 2 position
 							buttons[currentPosition+(3*12)].status = 0;
 							buttons[currentPosition+12].status = wr2;
@@ -732,6 +744,8 @@
 								pieceMoved = false;
 								return;
 							}
+							//update king position
+							pieceType[currentPiece-1].pieceColor == white ? whiteKingButton = this.gridNum : blackKingButton = this.gridNum;
 							//update white rook 1 position
 							buttons[currentPosition-(4*12)].status = 0;
 							buttons[currentPosition-(12)].status = wr1;
@@ -750,6 +764,8 @@
 								pieceMoved = false;
 								return;
 							}
+							//update king position
+							pieceType[currentPiece-1].pieceColor == white ? whiteKingButton = this.gridNum : blackKingButton = this.gridNum;
 							//update black rook 2 position
 							buttons[currentPosition+(3*12)].status = 0;
 							buttons[currentPosition+12].status = br2;
@@ -768,6 +784,8 @@
 								pieceMoved = false;
 								return;
 							}
+							//update king position
+							pieceType[currentPiece-1].pieceColor == white ? whiteKingButton = this.gridNum : blackKingButton = this.gridNum;
 							//update white rook 1 position
 							buttons[currentPosition-(4*12)].status = 0;
 							buttons[currentPosition-(12)].status = br1;
@@ -798,8 +816,10 @@
 					if (checkedKing[0] == true && checkedKing[1] == black)
 					{
 						blackKingChecked = true;
+						checkText(white, black, "Check");
 						if (checkmate(black))
 						{
+							checkText(white, black, "Checkmate");
 							console.log("White wins!");
 						}
 					}
@@ -817,11 +837,14 @@
 				{
 					console.log("turn = black and piece moved, calling pieceUnderAttack");
 					checkedKing = pieceUnderAttack (white, whiteKingButton);
+					
 					if (checkedKing[0] == true && checkedKing[1] == white)
 					{
 						whiteKingChecked = true;
+						checkText(black, white, "Check");
 						if (checkmate(white))
 						{
+							checkText(black, white, "Checkmate");
 							console.log("Black wins!");
 						}
 					}
