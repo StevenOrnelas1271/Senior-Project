@@ -17,10 +17,12 @@
 	<body>
 		<script>
 		var stage = new PIXI.Container();
-		var renderer = PIXI.autoDetectRenderer(500, 600);
+		var renderer = PIXI.autoDetectRenderer(482, 578);
 		
+		var UIscalex = 250
+		var UIscaley = 578;
 		var UIstage = new PIXI.Container();
-		var UIrenderer = PIXI.autoDetectRenderer(250,600);
+		var UIrenderer = PIXI.autoDetectRenderer(UIscalex,UIscaley);
 		
 		document.body.appendChild(renderer.view);
 		document.body.appendChild(UIrenderer.view);
@@ -45,7 +47,7 @@
 		var whiteKingChecked = false;
 		var blackKingChecked = false;
 		var kingCheckedBy = [];
-		var yText = 0;
+		var yText = 8;
 		var wave = 0;
 		var prevButton;
 		var prevKingButton = 0;
@@ -67,6 +69,8 @@
 		
 		// richtext array
 		var richText = [];
+		//grid markers
+		var gridMarks = [];
 
 		// button layer over the chessboard
 		var buttons = [];
@@ -88,37 +92,45 @@
 		var lightWood3 = PIXI.Sprite.fromImage("assets/lightwood3.png");
 		var lightWood4 = PIXI.Sprite.fromImage("assets/lightwood4.png");
 		
-		var randTile;
+		var randTile = 0;
 		
 
 		// create a 10 x 12 grid of interactive squares
 		for (var i = 0; i < 10; i++){
 			for (var j = 0; j < 12; j++){		
 				//var button = new PIXI.Sprite(textureButton);
-				
 
 				if ((i >= 1 && i <= 8) && (j >= 2 && j <= 9)){
+					// if white team
 					if ((i%2 == 0 && j%2 != 0) || i%2 != 0 && j%2 ==0){
-						var button = PIXI.Sprite.fromImage("assets/lightWood1.png");
-						//var button = PIXI.Sprite.fromImage("assets/white_grid.png");
-						
+						//randomize tile textures
 						randTile = (Math.random() * 4);
-						if (randTile == 0){ var button = lightWood1;}
-						if (randTile == 1){ var button = lightWood2;}
-						if (randTile == 2){ var button = lightWood3;}
-						if (randTile == 3){ var button = lightWood4;}
+						if (randTile >= 0 && randTile < 1){ var button = PIXI.Sprite.fromImage("assets/lightWood1.png");}
+						if (randTile >= 1 && randTile < 2){ var button = PIXI.Sprite.fromImage("assets/lightWood2.png");}
+						if (randTile >= 2 && randTile < 3){ var button = PIXI.Sprite.fromImage("assets/lightWood3.png");}
+						if (randTile >= 3 && randTile < 4){ var button = PIXI.Sprite.fromImage("assets/lightWood4.png");}
 					}
-					
+					//else black team
 					else{
 						//var button = PIXI.Sprite.fromImage("assets/black_grid.png");
-						var button = PIXI.Sprite.fromImage("assets/darkWood3.png");
+						randTile = (Math.random() * 4);
+						if (randTile >= 0 && randTile < 1){ var button = PIXI.Sprite.fromImage("assets/darkWood1.png");}
+						if (randTile >= 1 && randTile < 2){ var button = PIXI.Sprite.fromImage("assets/darkWood2.png");}
+						if (randTile >= 2 && randTile < 3){ var button = PIXI.Sprite.fromImage("assets/darkWood3.png");}
+						if (randTile >= 3 && randTile < 4){ var button = PIXI.Sprite.fromImage("assets/darkWood4.png");}
 					}
 					// initialize board state
 					button.status = 0;
 				}
 				else{
 					//var button = PIXI.Sprite.fromImage("assets/grass_grid.png");
-					var button = PIXI.Sprite.fromImage("assets/grassBorder.png");
+					//var button = PIXI.Sprite.fromImage("assets/grassBorder.png");
+					randTile = (Math.random() * 4);
+					if (randTile >= 0 && randTile < 1){ var button = PIXI.Sprite.fromImage("assets/woodBorder1.png");}
+					if (randTile >= 1 && randTile < 2){ var button = PIXI.Sprite.fromImage("assets/woodBorder2.png");}
+					if (randTile >= 2 && randTile < 3){ var button = PIXI.Sprite.fromImage("assets/woodBorder3.png");}
+					if (randTile >= 3 && randTile < 4){ var button = PIXI.Sprite.fromImage("assets/woodBorder4.png");}
+					button.rotation = Math.PI;
 					button.status = -1;
 					
 				}
@@ -165,7 +177,52 @@
 				buttons.push(button);
 			}
 		}
-
+		
+		//UI buttons in UI area
+		var UIbuttons = [];
+		var UIbutton  = PIXI.Sprite.fromImage("assets/rook-test.png");
+		UIbutton.position.x = 8;
+		UIbutton.position.y = UIscaley - 42;
+		UIbutton.interactive = true;
+		UIbutton.mouseover = function(){
+			this.tint=0x00ff00;
+		}
+		//mouse pointer leaves a button
+		UIbutton.mouseout = function(){
+			this.tint=defaultColor;
+		}
+		//detect mouseclick
+		UIbutton.on('mousedown', boardRotation);
+		//add touchscreen support
+		UIbutton.on('touchstart', boardRotation);
+		UIstage.addChild(UIbutton);
+		UIbuttons.push(UIbutton);
+		
+		//Create a border around the game area
+		var graphics = new PIXI.Graphics();
+		// set a fill and a line style again and draw a rectangle
+		graphics.lineStyle(4, 0xF0F0FF, 0.80); //(linewidth, color, alpha)
+		//graphics.beginFill(0xFF700B, 1);
+		graphics.drawRect(buttons[1].position.x+gridsize/2, buttons[1].position.y+gridsize/2, gridsize*8, gridsize*8); //drawRect(xPos,yPos,xScale,Yscale)
+		stage.addChild(graphics);
+		
+		var graphics2 = new PIXI.Graphics();
+		// set a fill and a line style again and draw a rectangle
+		graphics2.lineStyle(4, 0xF0F0FF, 0.80); //(linewidth, color, alpha)
+		//graphics.beginFill(0xFF700B, 1);
+		graphics2.drawRect(0, 0, gridsize*10, gridsize*12); //drawRect(xPos,yPos,xScale,Yscale)
+		stage.addChild(graphics2);
+		
+		//Create a border around the UI area
+		var graphics3 = new PIXI.Graphics();
+		// set a fill and a line style again and draw a rectangle
+		graphics3.lineStyle(8, 0xF0F0FF, 0.80); //(linewidth, color, alpha)
+		//graphics.beginFill(0xFF700B, 1);
+		graphics3.drawRect(0, 0, UIscalex, UIscaley); //drawRect(xPos,yPos,xScale,Yscale)
+		UIstage.addChild(graphics3);
+		
+		addCoordinateMarkers();
+		
 		//Create chess pieces
 		// load pawn image
 		var wPawnTexture = PIXI.Texture.fromImage("assets/wpawn1.png");
@@ -344,7 +401,6 @@
 			requestAnimationFrame(animate);
 			UIrenderer.render(UIstage);
 			renderer.render(stage);
-			renderer.render(UIcontainer);
 			for (var i=0; i<10; i++){
 				if (typeof richText[i] != "undefined"){
 					//richText[i].rotation -= Math.random();
