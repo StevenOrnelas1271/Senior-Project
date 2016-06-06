@@ -563,6 +563,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					capturable.push(true);
 					capturable.push(pieceColor);
 					capturable.push(j);
+					capturable.push('king');
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -622,6 +623,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					capturable.push(true);
 					capturable.push(pieceColor);
 					capturable.push(j);
+					capturable.push('king');
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -700,6 +702,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					capturable.push(true);
 					capturable.push(pieceColor);
 					capturable.push(j);
+					capturable.push('king');
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -757,6 +760,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					capturable.push(true);
 					capturable.push(pieceColor);
 					capturable.push(j);
+					capturable.push('king');
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -810,6 +814,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					capturable.push(true);
 					capturable.push(pieceColor);
 					capturable.push(j);
+					capturable.push('king');
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -875,6 +880,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					console.log("King diag right up");
 					capturable.push(true);
 					capturable.push(pieceColor);
+					
 					capturable.push(j);
 					if (pieceIsKing)
 					{
@@ -927,6 +933,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					capturable.push(true);
 					capturable.push(pieceColor);
 					capturable.push(j);
+					capturable.push('king');
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -1006,6 +1013,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 					capturable.push(true);
 					capturable.push(pieceColor);
 					capturable.push(j);
+					capturable.push('king');
 					if (pieceIsKing)
 					{
 						kingCheckedBy.push("king");
@@ -1432,39 +1440,51 @@ function Timer()
 	
 	};
 	
-	function timer_tick(playerTurn)
+function timer_tick(playerTurn)
+{
+	if (playerTurn == 0)
 	{
-		if (playerTurn == 0)
-		{
-			secondsW  = secondsW + 1;
-		}
-		if (playerTurn == 1)
-		{
-			secondsB  = secondsB + 1;
-		}
-		//document.getElementById("div1").innerHTML =index;
-		//timerUpdate();
-		
-		if (secondsW >= 59) 
-		{
-			secondsW = 0;
-			minutesW++;
-		}
-		if (secondsB >= 59)
-		{
-			secondsB = 0;
-			minutesB++;
-		}
-		if (minutesW >= 15)
-		{
-			this.Stop();
-		}
-		if (minutesB >= 15)
-		{
-			this.Stop();
-		}
-		timerUpdate();
+		console.log("Decrementing white seconds");
+		secondsW  -= 1;
 	}
+
+	if (playerTurn == 1)
+	{
+		secondsB  -= 1;
+	}
+	//document.getElementById("div1").innerHTML =index;
+	//timerUpdate();
+
+	if (minutesW <= 0 && secondsW <= 0)
+	{
+		timerUpdate();
+		this.Stop();
+		gameOverScreen(black);
+		return;
+	}
+		
+	if (minutesB <= 0 && secondsB <= 0)
+	{
+		timerUpdate();
+		this.Stop();
+		gameOverScreen(white);
+		return;
+	}
+	
+	if (secondsW < 1) 
+	{
+		secondsW = 59;
+		minutesW--;
+	}
+
+	if (secondsB < 1)
+	{
+		secondsB = 59;
+		minutesB--;
+	}
+		
+	timerUpdate();
+}
 	
 function timerUpdate()
 {
@@ -1497,7 +1517,7 @@ function timerUpdate()
 		timerTextW.push(wtText);
 		UIstage.addChild(wtText);
 	}
-	if (playerTurn == 1)
+	if (playerTurn == 1 || moveCount == 0)
 	{
 		if (secondsB < 10){
 			btText = new PIXI.Text( minutesB + ":0" + secondsB,style);
@@ -1718,10 +1738,13 @@ function temporaryClear (oldPosition)
 //oldPosition is where the piece WAS and newPosition is where the piece TRIED to move
 function restoreButton (buttonData, oldPosition)
 {
-	//console.log("RESTORING BUTTON AT POSITION: " + oldPosition);
+	console.log("RESTORING BUTTON AT POSITION: " + oldPosition);
 	buttons[oldPosition].status = buttonData[0];
 	buttons[oldPosition].type = buttonData[1];
 	buttons[oldPosition].pieceColor = buttonData[2];
+	
+	console.log("Restored data:" );
+	console.log(buttons[oldPosition]);
 }
 
 //Piece is the button the piece is moving to, prevButton is where that piece was
@@ -1888,7 +1911,7 @@ function checkmate (pieceColor)
 	if (savedKingCheckedBy[2] != "Knight")
 	{
 	//By using subtractValue we will only check squares in between the king and the attacking piece
-	for (i -= subtractValue; i > scanEnd; i -= subtractValue)
+	for (i -= subtractValue; i >= scanEnd; i -= subtractValue)
 	{
 		//i is now the first button in between the king and the attacking piece
 		//for each square in between the king and the attacking piece check if the king can move a piece there
@@ -1906,7 +1929,7 @@ function checkmate (pieceColor)
 			console.log("Pawn can move to square " + i + " to get out of check");
 			return false;
 		}
-		
+			
 		if (buttons[i-13].pieceColor == pieceColor && buttons[i-13].type == 'pawn'
 	     || buttons[i+13].pieceColor == pieceColor && buttons[i+13].type == 'pawn'
 		 || buttons[i-11].pieceColor == pieceColor && buttons[i-11].type == 'pawn'
@@ -1920,10 +1943,14 @@ function checkmate (pieceColor)
 		
 		//if (squareBlockable[0] && !pieceUnderAttack(pieceColor, kingPosition))
 		console.log("In blockable squareBlockable[2]: " + squareBlockable[2]);
+		var test = squareBlockable[2];
+		
 		if (squareBlockable[0])
 		{
+			if (squareBlockable[3] == 'king')
+				return true;
 			//Now check if we do move the  piece to block, does it put us in check again?
-			//First save the data at the current position we are moving from
+				//First save the data at the current position we are moving from
 			var tempButton = [];
 			//squareBlockable[2] contains the spot of the piece we want to move now
 			var prevButton = squareBlockable[2];
@@ -1933,7 +1960,8 @@ function checkmate (pieceColor)
 			//buttons[i].status = tempButton.status;
 			tempButton = tempButtonSetup(buttons[i], prevButton);
 			//Then clear the button where the piece was to see if moving it will put the king in check
-			temporaryClear(prevButton);
+			if (buttons[prevButton].type != 'king')
+				temporaryClear(prevButton);
 			if (pieceUnderAttack(pieceColor, kingPosition))
 			{
 				//Restore the button after checking
@@ -1965,8 +1993,9 @@ function kingCanMove (pieceColor, kingPosition)
 	oldData.push(buttons[kingPosition].pieceColor);
 	oldData.push(buttons[kingPosition].type);
 	
+	console.log(kingPosition);
 	temporaryClear(kingPosition);
-						
+	
 	//can king move diag left up
 	if (buttons[kingPosition-13].status == 0 )
 	{
@@ -2054,4 +2083,48 @@ function kingCanMove (pieceColor, kingPosition)
 	//If the king cannot move restore it
 	restoreButton(oldData, kingPosition);
 	return false;
+}
+
+
+function gameOverScreen (color)
+{
+	if (turnText.length >= 1){
+		UIstage.removeChild(turnText[0]);
+		turnText.shift();
+	}
+	
+	var style = {
+		font : 'bold 20px Arial',
+		fill : '#F7EDCA',
+		stroke : '#4a1850',
+		strokeThickness : 2,
+		dropShadow : true,
+		dropShadowColor : '#00000b',
+		dropShadowAngle : Math.PI / 6,
+		dropShadowDistance : 6,
+		wordWrap : true,
+		wordWrapWidth : 440
+	};
+	
+	if (color == 0) {
+		teamColor = "White";
+		p1Icon.alpha = 1;
+		p2Icon.alpha = 0;
+		}
+	if (color == 1) {
+		teamColor = "Black";
+		p1Icon.alpha = 0;
+		p2Icon.alpha = 1;
+		}
+	//Player turn update
+	tText = new PIXI.Text( teamColor + " wins!",style);
+	tText.x = UIscalex/2;
+	tText.y = UIscaley-UIscaley/2.5;
+	tText.anchor.x = 0.5;
+	turnText.push(tText);
+	UIstage.addChild(tText);
+	
+	bTimer.Stop();
+	wTimer.Stop();
+	
 }

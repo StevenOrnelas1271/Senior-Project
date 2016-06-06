@@ -59,16 +59,14 @@
 		var wTimer = new Timer();
 		wTimer.Interval = 1000;
 		wTimer.Tick = timer_tick;
-		//wTimer.Start(playerTurn);
 		var bTimer = new Timer();
 		bTimer.Interval = 1000;
 		bTimer.Tick = timer_tick;
-		//bTimer.Start(playerTurn);
 		
 		var secondsW = 0;
 		var secondsB = 0;
-		var minutesW = 0;
-		var minutesB = 0;
+		var minutesW = 15;
+		var minutesB = 15;
 		
 		var wp1 = 1, wp2 = 2, wp3 = 3, wp4 = 4, wp5 = 5, wp6 = 6, wp7 = 7, wp8 = 8;
 		var bp1 = 9, bp2 = 10, bp3 = 11, bp4 = 12, bp5 = 13, bp6 = 14, bp7 = 15, bp8 = 16;
@@ -466,6 +464,7 @@
 		
 		//render the scene
 		turnUpdate();
+		timerUpdate();
 		animate();
 		
 		//functions
@@ -926,6 +925,7 @@
 							checkText(white, black, "Checkmate");
 							console.log("White wins!");
 							gameOver = true;
+							gameOverScreen(white);
 						}
 					}
 					else
@@ -954,6 +954,7 @@
 							checkText(black, white, "Checkmate");
 							console.log("Black wins!");
 							gameOver = true;
+							gameOverScreen(black);
 						}
 					}
 					else
