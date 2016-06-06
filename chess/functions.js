@@ -467,18 +467,6 @@ function checkPawn (piece, capture)
 	}
 	
 	
-	pieceRow = piece.rowNum;
-	var pieceCol = piece.colNum;
-	var captureRow = capture.rowNum;
-	var captureCol = capture.colNum;
-	var pieceIndex = piece.status - 1;
-	var movement = pieceRow - captureRow;
-	var pieceColor = buttons[pieceCol * 12 + pieceRow].pieceColor;
-	var currentPosition = pieceCol * 12 + pieceRow;
-	var nextPosition = captureCol * 12 + captureRow;
-	
-	
-	
 	if (pieceColor == white && captureRow == 2)
 	{
 		console.log("upgrading pawn");
