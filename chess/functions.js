@@ -467,18 +467,6 @@ function checkPawn (piece, capture)
 	}
 	
 	
-	pieceRow = piece.rowNum;
-	var pieceCol = piece.colNum;
-	var captureRow = capture.rowNum;
-	var captureCol = capture.colNum;
-	var pieceIndex = piece.status - 1;
-	var movement = pieceRow - captureRow;
-	var pieceColor = buttons[pieceCol * 12 + pieceRow].pieceColor;
-	var currentPosition = pieceCol * 12 + pieceRow;
-	var nextPosition = captureCol * 12 + captureRow;
-	
-	
-	
 	if (pieceColor == white && captureRow == 2)
 	{
 		console.log("upgrading pawn");
@@ -1277,6 +1265,10 @@ function boardRotation(){
 	//}
 	
 }
+
+function quitGame(){
+	return 0;
+}
 		
 function updatePosition (buttonSelected, prevButton)
 {
@@ -1289,6 +1281,7 @@ function updatePosition (buttonSelected, prevButton)
 	pieces[currentPiece-1].firstMove = false;
 	moveCount += 1;
 	textUpdate(buttonSelected);
+	turnUpdate();
 }
 
 function textUpdate(buttonSelected){
@@ -1355,7 +1348,181 @@ function textUpdate(buttonSelected){
 	rText.y = yText;
 	yText+= 16;
 	richText.push(rText);
-	UIstage.addChild(rText);	
+	UIstage.addChild(rText);
+	
+}
+
+function turnUpdate(){
+	if (turnText.length >= 1){
+		UIstage.removeChild(turnText[0]);
+		turnText.shift();
+	}
+	var teamColor;
+	var style = {
+		font : 'bold 20px Arial',
+		fill : '#F7EDCA',
+		stroke : '#4a1850',
+		strokeThickness : 2,
+		dropShadow : true,
+		dropShadowColor : '#00000b',
+		dropShadowAngle : Math.PI / 6,
+		dropShadowDistance : 6,
+		wordWrap : true,
+		wordWrapWidth : 440
+	};
+	if (playerTurn == 1 || moveCount == 0) {
+		teamColor = "WHITE";
+		p1Icon.alpha = 1;
+		p2Icon.alpha = 0;
+		}
+	if (playerTurn == 0 && moveCount != 0) {
+		teamColor = "BLACK";
+		p1Icon.alpha = 0;
+		p2Icon.alpha = 1;
+		}
+	//Player turn update
+	tText = new PIXI.Text( teamColor + "'s Move",style);
+	tText.x = UIscalex/2;
+	tText.y = UIscaley-UIscaley/2.5;
+	tText.anchor.x = 0.5;
+	turnText.push(tText);
+	UIstage.addChild(tText);
+}
+
+function Timer()
+	{		
+		// Property: Frequency of elapse event of the timer in millisecond
+		this.Interval = 1000;
+		
+		// Property: Whether the timer is enable or not
+		this.Enable = new Boolean(false);
+		
+		// Event: Timer tick
+		this.Tick;
+		
+		// Member variable: Hold interval id of the timer
+		var timerId = 0;
+		
+		// Member variable: Hold instance of this class
+		var thisObject;
+		
+		// Function: Start the timer
+		this.Start = function(playerTurn)
+		{
+			this.Enable = new Boolean(true);
+	
+			thisObject = this;
+			if (thisObject.Enable)
+			{
+				thisObject.timerId = setInterval(
+				function()
+				{
+					thisObject.Tick(playerTurn); 
+				}, thisObject.Interval);
+			}
+		};
+		
+		// Function: Stops the timer
+		this.Stop = function()
+		{	
+			thisObject = this;
+			thisObject.Enable = new Boolean(false);
+			clearInterval(thisObject.timerId);
+		};
+	
+	};
+	
+	function timer_tick(playerTurn)
+	{
+		if (playerTurn == 0)
+		{
+			secondsW  = secondsW + 1;
+		}
+		if (playerTurn == 1)
+		{
+			secondsB  = secondsB + 1;
+		}
+		//document.getElementById("div1").innerHTML =index;
+		//timerUpdate();
+		
+		if (secondsW >= 59) 
+		{
+			secondsW = 0;
+			minutesW++;
+		}
+		if (secondsB >= 59)
+		{
+			secondsB = 0;
+			minutesB++;
+		}
+		if (minutesW >= 15)
+		{
+			this.Stop();
+		}
+		if (minutesB >= 15)
+		{
+			this.Stop();
+		}
+		timerUpdate();
+	}
+	
+function timerUpdate()
+{
+	var style = {
+		font : 'bold 20px Arial',
+		fill : '#F7EDCA',
+		stroke : '#4a1850',
+		strokeThickness : 4,
+		dropShadow : true,
+		dropShadowColor : '#00000c',
+		dropShadowAngle : Math.PI / 6,
+		dropShadowDistance : 6,
+		wordWrap : true,
+		wordWrapWidth : 440
+	};
+
+	//Player timer update
+	//seconds
+	if (playerTurn == 0)
+	{
+		if (secondsW < 10){
+			wtText = new PIXI.Text( minutesW + ":0" +secondsW,style);
+		}
+		else{
+			wtText = new PIXI.Text( minutesW + ":" +secondsW,style);
+		}
+		wtText.x = UIscalex/3;
+		wtText.y = UIscaley-UIscaley/4;
+		wtText.anchor.x = 0.5;
+		timerTextW.push(wtText);
+		UIstage.addChild(wtText);
+	}
+	if (playerTurn == 1)
+	{
+		if (secondsB < 10){
+			btText = new PIXI.Text( minutesB + ":0" + secondsB,style);
+		}
+		else{
+			btText = new PIXI.Text( minutesB + ":" + secondsB,style);
+		}
+		btText.x = UIscalex -UIscalex/3;
+		btText.y = UIscaley-UIscaley/4;
+		btText.anchor.x = 0.5;
+		timerTextB.push(btText);
+		UIstage.addChild(btText);
+	}
+	
+	//minutes
+	
+	if (timerTextW.length > 1){
+		UIstage.removeChild(timerTextW[0]);
+		timerTextW.shift();
+	}
+	if (timerTextB.length > 1){
+		UIstage.removeChild(timerTextB[0]);
+		timerTextB.shift();
+	}
+		
 }
 
 function addCoordinateMarkers(){
@@ -1531,6 +1698,7 @@ function checkText (color, enemyColor, check)
 		else
 			rText = new PIXI.Text('Black has put White in check!', style);
 	}
+
 	rText.x = 8;
 	rText.y = yText;
 	yText+= 16;
