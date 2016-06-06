@@ -55,6 +55,19 @@
 		var nextButtonData = [];
 		var boardRotate = false;
 		
+		var wTimer = new Timer();
+		wTimer.Interval = 1000;
+		wTimer.Tick = timer_tick;
+		//wTimer.Start(playerTurn);
+		var bTimer = new Timer();
+		bTimer.Interval = 1000;
+		bTimer.Tick = timer_tick;
+		//bTimer.Start(playerTurn);
+		
+		var secondsW = 0;
+		var secondsB = 0;
+		var minutesW = 0;
+		var minutesB = 0;
 		
 		var wp1 = 1, wp2 = 2, wp3 = 3, wp4 = 4, wp5 = 5, wp6 = 6, wp7 = 7, wp8 = 8;
 		var bp1 = 9, bp2 = 10, bp3 = 11, bp4 = 12, bp5 = 13, bp6 = 14, bp7 = 15, bp8 = 16;
@@ -70,6 +83,9 @@
 		
 		// richtext array
 		var richText = [];
+		var turnText = [];
+		var timerTextW = [];
+		var timerTextB = [];
 		//grid markers
 		var gridMarks = [];
 
@@ -179,11 +195,12 @@
 			}
 		}
 		
+	//ROTATE BOARD BUTTON
 		//UI buttons in UI area
-		var UIbuttons = [];
-		var UIbutton  = PIXI.Sprite.fromImage("assets/rook-test.png");
-		UIbutton.position.x = 8;
+		var UIbutton  = PIXI.Sprite.fromImage("assets/rotatebutton.png");
+		UIbutton.position.x = 20;
 		UIbutton.position.y = UIscaley - 42;
+		UIbutton.alpha = 0.8;
 		UIbutton.interactive = true;
 		UIbutton.mouseover = function(){
 			this.tint=0x00ff00;
@@ -197,7 +214,52 @@
 		//add touchscreen support
 		UIbutton.on('touchstart', boardRotation);
 		UIstage.addChild(UIbutton);
-		UIbuttons.push(UIbutton);
+		
+	//QUIT GAME BUTTON
+				//UI buttons in UI area
+		var UIbutton2  = PIXI.Sprite.fromImage("assets/forfeitbutton.png");
+		UIbutton2.position.x = UIscalex - 100;
+		UIbutton2.position.y = UIscaley - 42;
+		UIbutton2.alpha = 0.8;
+		UIbutton2.interactive = true;
+		UIbutton2.mouseover = function(){
+			this.tint=0x00ff00;
+		}
+		//mouse pointer leaves a button
+		UIbutton2.mouseout = function(){
+			this.tint=defaultColor;
+		}
+		//detect mouseclick
+		UIbutton2.on('mousedown', quitGame);
+		//add touchscreen support
+		UIbutton2.on('touchstart', quitGame);
+		UIstage.addChild(UIbutton2);
+		
+	//UI Knight silhoutte background
+		var UIbackground = PIXI.Sprite.fromImage("assets/UIbackground.png");
+		UIbackground.position.x = UIscalex/2;
+		UIbackground.position.y = UIscaley/4;
+		UIbackground.scale.x = 0.8;
+		UIbackground.scale.y = 0.8;
+		UIbackground.anchor.x = 0.5;
+		UIbackground.anchor.y = 0.5;
+		UIbackground.alpha = 0.20;
+		UIstage.addChild(UIbackground);
+		
+	//Player1 Icon
+		var p1Icon = PIXI.Sprite.fromImage("assets/wking1.png");
+		p1Icon.position.x = UIscalex/3;
+		p1Icon.position.y = UIscaley-UIscaley/4-16;
+		p1Icon.anchor.x = 0.5;
+		p1Icon.anchor.y = 0.5;
+		UIstage.addChild(p1Icon);
+		
+		var p2Icon = PIXI.Sprite.fromImage("assets/bking1.png");
+		p2Icon.position.x = UIscalex -UIscalex/3;
+		p2Icon.position.y = UIscaley-UIscaley/4-16;
+		p2Icon.anchor.x = 0.5;
+		p2Icon.anchor.y = 0.5;
+		UIstage.addChild(p2Icon);
 		
 		//Create a border around the game area
 		var graphics = new PIXI.Graphics();
@@ -221,6 +283,13 @@
 		//graphics.beginFill(0xFF700B, 1);
 		graphics3.drawRect(0, 0, UIscalex, UIscaley); //drawRect(xPos,yPos,xScale,Yscale)
 		UIstage.addChild(graphics3);
+		
+		var graphics4 = new PIXI.Graphics();
+		// set a fill and a line style again and draw a rectangle
+		graphics4.lineStyle(8, 0xF0F0FF, 0.80); //(linewidth, color, alpha)
+		//graphics.beginFill(0xFF700B, 1);
+		graphics4.drawRect(0, 0, UIscalex, UIscaley/2); //drawRect(xPos,yPos,xScale,Yscale)
+		UIstage.addChild(graphics4);		
 		
 		addCoordinateMarkers();
 		
@@ -394,6 +463,7 @@
 		buttons[62].status = 32;
 		
 		//render the scene
+		turnUpdate();
 		animate();
 		
 		//functions
@@ -441,12 +511,15 @@
 								
 								pieces[j] = new PIXI.Sprite(wQueenTexture);
 								pieces[j].type = 'queen';
+								pieces[j].scale.x =1.25;
+								pieces[j].scale.y = 1.25;
 								pieces[j].anchor.x = 0.5;
-								pieces[j].anchor.y = 0.5;
+								pieces[j].anchor.y = 0.75;
 								pieces[j].pieceColor = white;
 								
 								stage.addChild (pieceType[j]);
 								pieces.push(pieceType[j]);
+								this.status = j;
 						}
 						if (pieces[j].pieceColor == black && pieces[j].rowNum == 9){
 								deletePiece(pieces[j].status-1);
@@ -454,8 +527,10 @@
 								
 								pieces[j] = new PIXI.Sprite(bQueenTexture);
 								pieces[j].type = 'queen';
+								pieces[j].scale.x = 1.25;
+								pieces[j].scale.y = 1.25;
 								pieces[j].anchor.x = 0.5;
-								pieces[j].anchor.y = 0.5;
+								pieces[j].anchor.y = 0.75;
 								pieces[j].pieceColor = black;
 								
 								stage.addChild (pieceType[j]);
@@ -464,6 +539,7 @@
 					}					
 				}
 			}
+			//turnUpdate();
 		}
 		
 		function movePiece()
@@ -886,6 +962,8 @@
 					}
 				
 					playerTurn = black;
+					bTimer.Start(playerTurn);
+					wTimer.Stop();
 					currentPiece = 0;
 					console.log("blackKingChecked?: " + blackKingChecked);
 					return;
@@ -912,6 +990,8 @@
 					
 					
 					playerTurn = white;
+					wTimer.Start(playerTurn);
+					bTimer.Stop();
 					currentPiece = 0;
 					console.log("whiteKingChecked?: " + whiteKingChecked);
 					return;
