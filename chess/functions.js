@@ -49,9 +49,9 @@ function validMove(piece, capture, pieceType)
 			}
 			
 			//in these cases we want to check if moving puts the king in check
-			console.log("Old color: " + pieceColor);
+			//console.log("Old color: " + pieceColor);
 			checkedKing = pieceUnderAttack(pieceColor, kingButton);
-			console.log(checkedKing);
+			//console.log(checkedKing);
 			if (checkedKing[0] == true && checkedKing[1] == pieceColor)
 			{
 				moveValid = false;
@@ -133,7 +133,7 @@ function validMove(piece, capture, pieceType)
 			
 			//before checking if the king is in check assume the move is valid for now
 			
-			console.log("Queen calling kingChecked with color: " + oldColor);
+			//console.log("Queen calling kingChecked with color: " + oldColor);
 			checkedKing = pieceUnderAttack(oldColor, kingButton);
 			if (checkedKing[0] == true && checkedKing[1] == oldColor)
 			{
@@ -465,6 +465,59 @@ function checkPawn (piece, capture)
 			return false;			
 		}
 	}
+	
+	
+	pieceRow = piece.rowNum;
+	var pieceCol = piece.colNum;
+	var captureRow = capture.rowNum;
+	var captureCol = capture.colNum;
+	var pieceIndex = piece.status - 1;
+	var movement = pieceRow - captureRow;
+	var pieceColor = buttons[pieceCol * 12 + pieceRow].pieceColor;
+	var currentPosition = pieceCol * 12 + pieceRow;
+	var nextPosition = captureCol * 12 + captureRow;
+	
+	
+	
+	if (pieceColor == white && captureRow == 2)
+	{
+		console.log("upgrading pawn");
+		deletePiece(pieces[pieceIndex].status-1);	
+		pieces[pieceIndex] = new PIXI.Sprite(wQueenTexture);
+		pieces[pieceIndex].type = 'queen';
+		pieces[pieceIndex].scale.x = 1.25;
+		pieces[pieceIndex].scale.y = 1.25;								
+		pieces[pieceIndex].anchor.x = 0.5;
+		pieces[pieceIndex].anchor.y = 0.75;
+		pieces[pieceIndex].pieceColor = white;
+		pieces[pieceIndex].rowNum = pieceRow;
+		pieces[pieceIndex].colNum = pieceCol;
+		
+		stage.addChild (pieceType[pieceIndex]);
+								//pieces.push(pieceType[pieceIndex]);
+								//console.log(pieces);
+	
+	}
+
+	if (pieceColor == black && captureRow == 9)
+	{
+		deletePiece(pieces[pieceIndex].status-1);
+		this.status = currentPiece;
+		
+		pieces[pieceIndex] = new PIXI.Sprite(bQueenTexture);
+		pieces[pieceIndex].type = 'queen';
+		pieces[pieceIndex].scale.x = 1.25;
+		pieces[pieceIndex].scale.y = 1.25;								
+		pieces[pieceIndex].anchor.x = 0.5;
+		pieces[pieceIndex].anchor.y = 0.75;
+		pieces[pieceIndex].pieceColor = black;
+		pieces[pieceIndex].rowNum = pieceRow;
+		pieces[pieceIndex].colNum = pieceCol;
+
+		
+		stage.addChild (pieceType[pieceIndex]);
+		//pieces.push(pieceType[pieceIndex]);	
+	}									
 	console.log("Returning true in pawn");
 	return true;
 }
@@ -486,8 +539,8 @@ function pieceUnderAttack(pieceColor, piecePosition)
 	//Now that we have the empty squares around the king simply follow them
 	var opponentColor;
 	pieceColor == white ? opponentColor = black : opponentColor = white;
-	console.log("pUA pieceColor: " + pieceColor);
-	console.log("pUA opp color: " + opponentColor);
+	//console.log("pUA pieceColor: " + pieceColor);
+	//console.log("pUA opp color: " + opponentColor);
 	for (i = 0; i < nearbySquares.length; i++)
 	{
 		//console.log(buttons[nearbySquares[i][0]].status);
@@ -635,7 +688,7 @@ function pieceUnderAttack(pieceColor, piecePosition)
 			if (buttons[nearbySquares[i][0]].status >= (wp1) && buttons[nearbySquares[i][0]].status <= (wp8) && pieceColor == black)
 			{
 				console.log("Attacked by white pawn, diag left down");
-				console.log(buttons[nearbySquares[i][0]].status);
+				//console.log(buttons[nearbySquares[i][0]].status);
 				capturable.push(true);
 				capturable.push(pieceColor);
 				capturable.push(piecePosition);
@@ -813,10 +866,10 @@ function pieceUnderAttack(pieceColor, piecePosition)
 			
 			if (buttons[nearbySquares[i][0]].status >= (bp1) && buttons[nearbySquares[i][0]].status <= (bp8) && pieceColor == white)
 			{
-				log("white king checked by a blackpawn, diag right up");
+				log("white piece attacked by a blackpawn, diag right up");
 				capturable.push(true);
 				capturable.push(pieceColor);
-				//capturable.push(j);
+				capturable.push(nearbySquares[i][0]);
 				if (pieceIsKing)
 				{
 					kingCheckedBy.push("pawn");					
@@ -898,11 +951,13 @@ function pieceUnderAttack(pieceColor, piecePosition)
 				
 				if (buttons[j].pieceColor == pieceColor || buttons[j].status == -1)
 				{
+					console.log("Right 1 break");
 					break;
 				}
 				
 				if (buttons[j].status > 0 && buttons[j].type != 'rook' && buttons[j].type != 'queen')
 				{
+					console.log("Right 2 break");
 					break;
 				}
 				
@@ -1119,7 +1174,7 @@ function findNearbySquares(kingPosition)
 
 //print error messages for debugging
 function log(msg) {
-	console.log(msg);
+	//console.log(msg);
 }
 		
 function keyPressed (event)
@@ -1252,7 +1307,9 @@ function textUpdate(buttonSelected){
 			richText[i].position.y -= 16;
 		}
 		
-		yText = 248;
+		//yText = 248;
+		//Don't know why but it works :)
+		yText -= 16;
 	}
 	
 	var Col;
@@ -1623,7 +1680,8 @@ function checkText (color, enemyColor, check)
 			richText[i].position.y -= 16;
 		}
 		
-		yText = 248;
+		//yText = 248;
+		yText -= 16;
 	}
 	var style = {
 		font : 'bold 16px Arial',
@@ -1652,7 +1710,7 @@ function checkText (color, enemyColor, check)
 		else
 			rText = new PIXI.Text('Black has put White in check!', style);
 	}
-	
+
 	rText.x = 8;
 	rText.y = yText;
 	yText+= 16;
@@ -1672,7 +1730,7 @@ function temporaryClear (oldPosition)
 //oldPosition is where the piece WAS and newPosition is where the piece TRIED to move
 function restoreButton (buttonData, oldPosition)
 {
-	console.log("RESTORING BUTTON AT POSITION: " + oldPosition);
+	//console.log("RESTORING BUTTON AT POSITION: " + oldPosition);
 	buttons[oldPosition].status = buttonData[0];
 	buttons[oldPosition].type = buttonData[1];
 	buttons[oldPosition].pieceColor = buttonData[2];
@@ -1703,7 +1761,7 @@ function tempButtonSetup (piece, prevButton)
 function checkmate (pieceColor)
 {
 	pieceColor == white ? nearbySquares = findNearbySquares(whiteKingButton) : nearbySquares = findNearbySquares(blackKingButton);
-	console.log(kingCheckedBy);
+	//console.log(kingCheckedBy);
 	
 	//We need to save the current kingCheckedBy data because subsequent calls to the pieceUnderAttack function
 	//will overwrite kingCheckedBy
@@ -1773,8 +1831,8 @@ function checkmate (pieceColor)
 								 savedKingCheckedBy[1]+14, savedKingCheckedBy[1]+25, savedKingCheckedBy[1]+23, savedKingCheckedBy[1]+10];
 	}
 	
-	console.log("ScanStart = " + scanStart);
-	console.log("Subtract Value = " + subtractValue);
+	//console.log("ScanStart = " + scanStart);
+	//console.log("Subtract Value = " + subtractValue);
 	
 	//First check if a piece can capture the attacking piece
 	//savedKingCheckedBy[1] contains the position of the piece attacking the king
@@ -1789,26 +1847,36 @@ function checkmate (pieceColor)
 		var tempButton = [];
 		//squareBlockable[2] contains the spot of the piece we want to move now
 		var prevButton = capturable[2];
-
-		tempButton.push(buttons[prevButton].status);
-		tempButton.push(buttons[prevButton].type);
-		tempButton.push(buttons[prevButton].pieceColor);
+		var attackingButton = savedKingCheckedBy[1];
+		var tempAttackingButton = [];
+		tempAttackingButton.push(buttons[attackingButton].status);
+		tempAttackingButton.push(buttons[attackingButton].type);
+		tempAttackingButton.push(buttons[attackingButton].pieceColor);
 		
-		//Then clear the button where the piece was to see if moving it will put the king in check
-		temporaryClear(prevButton);
+		//Save the data of the spot you were at
+		tempButton = tempButtonSetup(buttons[attackingButton], prevButton);
+		
+		buttons[attackingButton].status = buttons[prevButton].status;
+		buttons[attackingButton].type = buttons[prevButton].type;
+		buttons[attackingButton].pieceColor = buttons[prevButton].pieceColor;
 		
 		kingCapturable = pieceUnderAttack(pieceColor, savedKingCheckedBy[1]);
 		console.log(kingCapturable);
-				
+		console.log(tempButton);
+		console.log(tempAttackingButton);
 		//return false to indicate checkmate is equal to false
 		if (kingCapturable[0] == false)
 		{
+			console.log("Piece capturable safely");
 			restoreButton(tempButton, prevButton);
+			restoreButton(tempAttackingButton, attackingButton);
+			//restoreButton(tempAttackingButton, attackingButton);
 			return false;
 		}
 		else
 		{
 			console.log("Piece is NOT capturable safely");
+			restoreButton(tempAttackingButton, attackingButton);
 			restoreButton(tempButton, prevButton);
 		}
 	}
@@ -1836,7 +1904,7 @@ function checkmate (pieceColor)
 	{
 		//i is now the first button in between the king and the attacking piece
 		//for each square in between the king and the attacking piece check if the king can move a piece there
-		console.log("square " + i + " in between king and attacking piece");
+		console.log("square " + i + " in between king and attacking piece. Color: " + opponentColor);
 		
 		//Call pieceUnderAttack with pieceColor to see if a piece can move to square i
 		squareBlockable = pieceUnderAttack(opponentColor, i);
@@ -1844,8 +1912,8 @@ function checkmate (pieceColor)
 		//Since pieceUnderAttack only checks a pieces capture rules it would never allow a pawn
 		//to simply move up 1 to block a piece from attacking
 		//So instead do that check here
-		if (buttons[i-1].pieceColor == pieceColor && buttons[i-1].type == 'pawn'
-		 || buttons[i+1].pieceColor == pieceColor && buttons[i+1].type == 'pawn')
+		if (buttons[i+1].pieceColor == white && buttons[i+1].type == 'pawn'
+		 || buttons[i-1].pieceColor == black && buttons[i-1].type == 'pawn')
 		{
 			console.log("Pawn can move to square " + i + " to get out of check");
 			return false;
@@ -1872,16 +1940,17 @@ function checkmate (pieceColor)
 			//squareBlockable[2] contains the spot of the piece we want to move now
 			var prevButton = squareBlockable[2];
 			
-			tempButton.push(buttons[prevButton].status);
-			tempButton.push(buttons[prevButton].type);
-			tempButton.push(buttons[prevButton].pieceColor);
+			console.log(i);
 			
+			//buttons[i].status = tempButton.status;
+			tempButton = tempButtonSetup(buttons[i], prevButton);
 			//Then clear the button where the piece was to see if moving it will put the king in check
 			temporaryClear(prevButton);
-			if (!pieceUnderAttack(pieceColor, kingPosition))
+			if (pieceUnderAttack(pieceColor, kingPosition))
 			{
 				//Restore the button after checking
 				restoreButton(tempButton, prevButton);
+				temporaryClear(i);
 				console.log("King can move a piece to square " + i + " to get out of check");
 				
 				return false;

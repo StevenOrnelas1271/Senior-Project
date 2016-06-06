@@ -54,6 +54,7 @@
 		var tempButton = [];
 		var nextButtonData = [];
 		var boardRotate = false;
+		var gameOver = false;
 		
 		var wTimer = new Timer();
 		wTimer.Interval = 1000;
@@ -94,10 +95,11 @@
 		
 		var noop = function (){
 			
-			log("Clicked grid number: " + this.gridNum);	
-			log("This color: " + this.pieceColor);
+			console.log("Clicked grid number: " + this.gridNum);	
+			/*log("This color: " + this.pieceColor);
 			
 			log("This status: " + this.status);
+			log("This type: " + this.type);
 			/*
 			log("this row num: " + this.rowNum);
 			*/
@@ -504,46 +506,14 @@
 					//record color of piece currently on the grid
 					buttons[i].pieceColor = pieces[j].pieceColor;
 					buttons[i].type = pieces[j].type;
-					if (pieces[j].type == 'pawn'){
-						if (pieces[j].pieceColor == white && pieces[j].rowNum == 2){
-								deletePiece(pieces[j].status-1);
-								this.status = currentPiece;
-								
-								pieces[j] = new PIXI.Sprite(wQueenTexture);
-								pieces[j].type = 'queen';
-								pieces[j].scale.x =1.25;
-								pieces[j].scale.y = 1.25;
-								pieces[j].anchor.x = 0.5;
-								pieces[j].anchor.y = 0.75;
-								pieces[j].pieceColor = white;
-								
-								stage.addChild (pieceType[j]);
-								pieces.push(pieceType[j]);
-								this.status = j;
-						}
-						if (pieces[j].pieceColor == black && pieces[j].rowNum == 9){
-								deletePiece(pieces[j].status-1);
-								this.status = currentPiece;
-								
-								pieces[j] = new PIXI.Sprite(bQueenTexture);
-								pieces[j].type = 'queen';
-								pieces[j].scale.x = 1.25;
-								pieces[j].scale.y = 1.25;
-								pieces[j].anchor.x = 0.5;
-								pieces[j].anchor.y = 0.75;
-								pieces[j].pieceColor = black;
-								
-								stage.addChild (pieceType[j]);
-								pieces.push(pieceType[j]);
-						}
-					}					
 				}
 			}
-			//turnUpdate();
 		}
 		
 		function movePiece()
 		{
+			if (gameOver)
+			{return;}
 			//if no piece is selected...
 			if (currentPiece == 0){
 				pieceMoved = false;
@@ -819,6 +789,7 @@
 						){
 							
 							pieceType[currentPiece-1].pieceColor == white ? whiteKingButton = this.gridNum : blackKingButton = this.gridNum;
+							console.log("In king movement pieceColor: " + pieceType[currentPiece-1].pieceColor + " setting button to " + this.gridNum);
 							var oldStatus = this.status;
 							var oldColor = this.pieceColor;
 							deletePiece(oldStatus - 1);
@@ -945,7 +916,7 @@
 				{
 					console.log("turn = white and piece moved, calling pieceUnderAttack");
 					checkedKing = pieceUnderAttack (black, blackKingButton);
-					console.log("CheckedKing: " + checkedKing[0] + " " + checkedKing[1]);
+					//console.log("CheckedKing: " + checkedKing[0] + " " + checkedKing[1]);
 					if (checkedKing[0] == true && checkedKing[1] == black)
 					{
 						blackKingChecked = true;
@@ -954,6 +925,7 @@
 						{
 							checkText(white, black, "Checkmate");
 							console.log("White wins!");
+							gameOver = true;
 						}
 					}
 					else
@@ -981,6 +953,7 @@
 						{
 							checkText(black, white, "Checkmate");
 							console.log("Black wins!");
+							gameOver = true;
 						}
 					}
 					else
